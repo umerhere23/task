@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useApiClient, useApp } from '@/hooks/useAuth';
 import { LoadingSpinner, ErrorAlert, Pagination } from '@/components/ui/UI';
+import styles from './CustomerList.module.css';
 
 interface Customer {
   id: string;
@@ -72,18 +73,18 @@ export function CustomerList() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-2">
+    <div className={styles.container}>
+      <div className={styles.searchBar}>
         <input
           type="text"
           placeholder="Search by name or email..."
           value={search}
           onChange={(e) => handleSearchChange(e.target.value)}
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className={styles.searchInput}
         />
         <Link
           href="/customers/new"
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className={styles.newButton}
         >
           New Customer
         </Link>
@@ -91,28 +92,28 @@ export function CustomerList() {
 
       {error && <ErrorAlert message={error} />}
 
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50 border-b">
-            <tr>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Name</th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Email</th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Phone</th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Assigned To</th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Actions</th>
+      <div className={styles.tableContainer}>
+        <table className={styles.table}>
+          <thead className={styles.tableHead}>
+            <tr className={styles.tableHeadRow}>
+              <th className={styles.tableHeadCell}>Name</th>
+              <th className={styles.tableHeadCell}>Email</th>
+              <th className={styles.tableHeadCell}>Phone</th>
+              <th className={styles.tableHeadCell}>Assigned To</th>
+              <th className={styles.tableHeadCell}>Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className={styles.tableBody}>
             {customers.map((customer) => (
-              <tr key={customer.id} className="border-b hover:bg-gray-50">
-                <td className="px-6 py-3 text-sm font-medium text-gray-900">{customer.name}</td>
-                <td className="px-6 py-3 text-sm text-gray-600">{customer.email}</td>
-                <td className="px-6 py-3 text-sm text-gray-600">{customer.phone || '—'}</td>
-                <td className="px-6 py-3 text-sm text-gray-600">{customer.assignedToName || '—'}</td>
-                <td className="px-6 py-3 text-sm">
+              <tr key={customer.id} className={styles.tableBodyRow}>
+                <td className={`${styles.tableCell} ${styles.tableCellBold}`}>{customer.name}</td>
+                <td className={styles.tableCell}>{customer.email}</td>
+                <td className={styles.tableCell}>{customer.phone || '—'}</td>
+                <td className={styles.tableCell}>{customer.assignedToName || '—'}</td>
+                <td className={styles.tableCell}>
                   <Link
                     href={`/customers/${customer.id}`}
-                    className="text-blue-600 hover:text-blue-800 font-medium"
+                    className={styles.actionLink}
                   >
                     View
                   </Link>
@@ -124,7 +125,7 @@ export function CustomerList() {
       </div>
 
       {customers.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
+        <div className={styles.emptyState}>
           {search ? 'No customers found matching your search' : 'No customers yet'}
         </div>
       )}

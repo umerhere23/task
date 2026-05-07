@@ -1,0 +1,186 @@
+import { NextRequest, NextResponse } from 'next/server';
+import {
+  listCustomersModel,
+  getCustomerModel,
+  createCustomerModel,
+  updateCustomerModel,
+  deleteCustomerModel,
+  assignCustomerModel,
+  restoreCustomerModel,
+} from '@/server/models/customer.model';
+import { HttpError, parseJsonBody } from '@/server/middleware/http.middleware';
+
+export async function listCustomersController(request: NextRequest): Promise<NextResponse> {
+  const organizationId = request.headers.get('x-org-id');
+  if (!organizationId) {
+    throw new HttpError('Organization ID is required', 400);
+  }
+
+  const page = parseInt(request.nextUrl.searchParams.get('page') || '1', 10);
+  const limit = parseInt(request.nextUrl.searchParams.get('limit') || '20', 10);
+  const search = request.nextUrl.searchParams.get('search') || undefined;
+
+  const result = await listCustomersModel(organizationId, page, limit, search);
+
+  return NextResponse.json(result, { status: 200 });
+}
+
+export async function getCustomerController(request: NextRequest, { params }: { params: { customerId: string } }): Promise<NextResponse> {
+  const organizationId = request.headers.get('x-org-id');
+  const customerId = params.customerId;
+
+  if (!organizationId) {
+    throw new HttpError('Organization ID is required', 400);
+  }
+
+  if (!customerId) {
+    throw new HttpError('Customer ID is required', 400);
+  }
+
+  const customer = await getCustomerModel(customerId, organizationId);
+
+  if (!customer) {
+    throw new HttpError('Customer not found', 404);
+  }
+
+  return NextResponse.json(customer, { status: 200 });
+}
+
+export async function createCustomerController(request: NextRequest): Promise<NextResponse> {
+  const organizationId = request.headers.get('x-org-id');
+  if (!organizationId) {
+    throw new HttpError('Organization ID is required', 400);
+  }
+
+  const body = await parseJsonBody<unknown>(request);
+
+  if (!body || typeof body !== 'object') {
+    throw new HttpError('Request body is required', 400);
+  }
+
+  const { name, email, phone } = body as Record<string, unknown>;
+
+  if (!name || typeof name !== 'string') {
+    throw new HttpError('Customer name is required', 400);
+  }
+
+  if (!email || typeof email !== 'string') {
+    throw new HttpError('Customer email is required', 400);
+  }
+
+  const customer = await createCustomerModel(organizationId, {
+    name,
+    email,
+    phone: typeof phone === 'string' ? phone : undefined,
+  });
+
+  return NextResponse.json(customer, { status: 201 });
+}
+
+export async function updateCustomerController(request: NextRequest, { params }: { params: { customerId: string } }): Promise<NextResponse> {
+  const organizationId = request.headers.get('x-org-id');
+  const customerId = params.customerId;
+
+  if (!organizationId) {
+    throw new HttpError('Organization ID is required', 400);
+  }
+
+  if (!customerId) {
+    throw new HttpError('Customer ID is required', 400);
+  }
+
+  const body = await parseJsonBody<unknown>(request);
+
+  if (!body || typeof body !== 'object') {
+    throw new HttpError('Request body is required', 400);
+  }
+
+  const { name, email, phone } = body as Record<string, unknown>;
+
+  const customer = await updateCustomerModel(customerId, organizationId, {
+    name: typeof name === 'string' ? name : undefined,
+    email: typeof email === 'string' ? email : undefined,
+    phone: phone !== undefined && typeof phone === 'string' ? phone : undefined,
+  });
+
+  if (!customer) {
+    throw new HttpError('Customer not found', 404);
+  }
+
+  return NextResponse.json(customer, { status: 200 });
+}
+
+export async function deleteCustomerController(request: NextRequest, { params }: { params: { customerId: string } }): Promise<NextResponse> {
+  const organizationId = request.headers.get('x-org-id');
+  const customerId = params.customerId;
+
+  if (!organizationId) {
+    throw new HttpError('Organization ID is required', 400);
+  }
+
+  if (!customerId) {
+    throw new HttpError('Customer ID is required', 400);
+  }
+
+  const deleted = await deleteCustomerModel(customerId, organizationId);
+
+  if (!deleted) {
+    throw new HttpError('Customer not found', 404);
+  }
+
+  return NextResponse.json(null, { status: 204 });
+}
+
+export async function assignCustomerController(request: NextRequest, { params }: { params: { customerId: string } }): Promise<NextResponse> {
+  const organizationId = request.headers.get('x-org-id');
+  const customerId = params.customerId;
+
+  if (!organizationId) {
+    throw new HttpError('Organization ID is required', 400);
+  }
+
+  if (!customerId) {
+    throw new HttpError('Customer ID is required', 400);
+  }
+
+  const body = await parseJsonBody<unknown>(request);
+
+  if (!body || typeof body !== 'object') {
+    throw new HttpError('Request body is required', 400);
+  }
+
+  const { assignedToId } = body as Record<string, unknown>;
+
+  if (!assignedToId || typeof assignedToId !== 'string') {
+    throw new HttpError('Assigned user ID is required', 400);
+  }
+
+  const customer = await assignCustomerModel(customerId, organizationId, assignedToId);
+
+  if (!customer) {
+    throw new HttpError('Customer or user not found', 404);
+  }
+
+  return NextResponse.json(customer, { status: 200 });
+}
+
+export async function restoreCustomerController(request: NextRequest, { params }: { params: { customerId: string } }): Promise<NextResponse> {
+  const organizationId = request.headers.get('x-org-id');
+  const customerId = params.customerId;
+
+  if (!organizationId) {
+    throw new HttpError('Organization ID is required', 400);
+  }
+
+  if (!customerId) {
+    throw new HttpError('Customer ID is required', 400);
+  }
+
+  const customer = await restoreCustomerModel(customerId, organizationId);
+
+  if (!customer) {
+    throw new HttpError('Customer not found', 404);
+  }
+
+  return NextResponse.json(customer, { status: 200 });
+}

@@ -26,9 +26,11 @@ body {
 }
 
 input::placeholder,
-textarea::placeholder {
-  color: #6b7280;
-  opacity: 1;
+textarea::placeholder,
+select::placeholder {
+  color: #d1d5db;
+  opacity: 0.5;
+  font-style: italic;
 }
 
 input,

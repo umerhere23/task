@@ -1,20 +1,21 @@
 import { EntitySchema } from 'typeorm';
-import { OrganizationEntity } from '@/server/entities/Organization';
+import { UserEntity } from '@/server/entities/User';
 
-export interface UserEntity {
+export interface CustomerEntity {
   id: string;
   name: string;
   email: string;
-  password: string;
-  role: string;
+  phone: string | null;
   organizationId: string;
+  assignedToId: string | null;
+  deletedAt: Date | null;
   createdAt: Date;
-  organization?: OrganizationEntity;
+  assignedTo?: UserEntity;
 }
 
-export const UserSchema = new EntitySchema<UserEntity>({
-  name: 'User',
-  tableName: 'users',
+export const CustomerSchema = new EntitySchema<CustomerEntity>({
+  name: 'Customer',
+  tableName: 'customers',
   columns: {
     id: {
       type: String,
@@ -26,21 +27,26 @@ export const UserSchema = new EntitySchema<UserEntity>({
     },
     email: {
       type: String,
-      unique: true,
       nullable: false,
     },
-    password: {
+    phone: {
       type: String,
-      nullable: false,
-    },
-    role: {
-      type: String,
-      nullable: false,
+      nullable: true,
     },
     organizationId: {
       name: 'organization_id',
       type: String,
       nullable: false,
+    },
+    assignedToId: {
+      name: 'assigned_to_id',
+      type: String,
+      nullable: true,
+    },
+    deletedAt: {
+      name: 'deleted_at',
+      type: 'timestamptz',
+      nullable: true,
     },
     createdAt: {
       name: 'created_at',
@@ -50,13 +56,13 @@ export const UserSchema = new EntitySchema<UserEntity>({
     },
   },
   relations: {
-    organization: {
+    assignedTo: {
       type: 'many-to-one',
-      target: 'Organization',
+      target: 'User',
       joinColumn: {
-        name: 'organization_id',
+        name: 'assigned_to_id',
       },
-      onDelete: 'CASCADE',
+      onDelete: 'SET NULL',
     },
   },
 });

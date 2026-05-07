@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import { OrganizationSchema } from '@/server/entities/Organization';
 import { UserSchema } from '@/server/entities/User';
+import { CustomerSchema } from '@/server/entities/Customer';
 
 const synchronize = (process.env.DB_SYNCHRONIZE || 'true') === 'true';
 const logging = (process.env.DB_LOGGING || 'false') === 'true';
@@ -13,7 +14,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
   database: process.env.DB_NAME || 'crm_db',
-  entities: [OrganizationSchema, UserSchema],
+  entities: [OrganizationSchema, UserSchema, CustomerSchema],
   synchronize,
   logging,
 });
