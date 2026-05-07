@@ -128,7 +128,7 @@ function SetupPage() {
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="Acme Corp"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -141,7 +141,7 @@ function SetupPage() {
               onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
               placeholder="acme-corp"
               pattern="^[a-z0-9-]+$"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -153,7 +153,7 @@ function SetupPage() {
               value={formData.adminName}
               onChange={(e) => setFormData({ ...formData, adminName: e.target.value })}
               placeholder="John Doe"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -165,7 +165,7 @@ function SetupPage() {
               value={formData.adminEmail}
               onChange={(e) => setFormData({ ...formData, adminEmail: e.target.value })}
               placeholder="john@example.com"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
