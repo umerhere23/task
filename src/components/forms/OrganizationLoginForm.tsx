@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux';
 import { LoadingSpinner, ErrorAlert } from '@/components/ui/UI';
 import { loginSuccess } from '@/store/slices/authSlice';
 import { AppDispatch } from '@/store/store';
+import { useApp } from '@/hooks/useAuth';
 
 interface LoginFormData {
   email: string;
@@ -19,6 +20,7 @@ interface OrganizationLoginFormProps {
 
 export function OrganizationLoginForm({ onSuccess, onForgotPassword }: OrganizationLoginFormProps) {
   const dispatch = useDispatch<AppDispatch>();
+  const { setAuth } = useApp();
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
     password: '',
@@ -77,6 +79,8 @@ export function OrganizationLoginForm({ onSuccess, onForgotPassword }: Organizat
           token: data.token,
         })
       );
+
+      setAuth(data.user.id, data.organization.id, data.user.role, data.user.name);
 
       // Store session in localStorage for persistence
       localStorage.setItem('session', JSON.stringify({

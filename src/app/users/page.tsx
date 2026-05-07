@@ -1,164 +1,287 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useApiClient, useApp } from '@/hooks/useAuth';
-import { LoadingSpinner, ErrorAlert } from '@/components/ui/UI';
+import { useEffect, useMemo, useState, type FormEvent, type SVGProps } from 'react';
 import Link from 'next/link';
+import { AppShell } from '@/components/layout/AppShell';
+import { useAppAuth } from '@/hooks/useAppAuth';
+import styles from './Users.module.css';
 
-interface User {
+interface UserListItem {
   id: string;
   name: string;
   email: string;
-  role: string;
+  role: 'admin' | 'member' | string;
+  organizationId: string;
+  createdAt: string;
+  assignedCustomerCount: number;
+}
+
+type IconProps = SVGProps<SVGSVGElement>;
+
+function PlusIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14" />
+    </svg>
+  );
+}
+
+function SearchIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}>
+      <circle cx="11" cy="11" r="6.5" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16 16l5 5" />
+    </svg>
+  );
+}
+
+function ShieldIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3l7 3v5c0 4.4-2.7 8.4-7 10-4.3-1.6-7-5.6-7-10V6l7-3Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9.5 12.2l1.8 1.8 3.4-3.8" />
+    </svg>
+  );
 }
 
 export default function UsersPage() {
-  const { organizationId, userRole } = useApp();
-  const api = useApiClient();
-  const [users, setUsers] = useState<User[]>([]);
+  const { session, organization } = useAppAuth();
+  const [users, setUsers] = useState<UserListItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({ name: '', email: '', role: 'member' });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'member' as 'member' | 'admin' });
 
-  const loadUsers = async () => {
+  const isAdmin = session?.role === 'admin';
+
+  const stats = useMemo(() => {
+    const total = users.length;
+    const admins = users.filter((user) => user.role === 'admin').length;
+    const members = users.filter((user) => user.role === 'member').length;
+    const assigned = users.reduce((sum, user) => sum + (user.assignedCustomerCount || 0), 0);
+
+    return [
+      { label: 'Total users', value: String(total), detail: 'Organization scoped' },
+      { label: 'Admins', value: String(admins), detail: 'Can create users' },
+      { label: 'Members', value: String(members), detail: 'Standard access' },
+      { label: 'Assigned customers', value: String(assigned), detail: 'Active workload' },
+    ];
+  }, [users]);
+
+  const loadUsers = async (searchTerm: string = '') => {
+    if (!organization?.id) return;
+
+    setLoading(true);
+    setError(null);
+
     try {
-      setLoading(true);
-      setError(null);
-      const result = await api.listUsers();
-      setUsers(result);
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError('Failed to load users');
+      const url = new URL('/api/users', window.location.origin);
+      if (searchTerm) url.searchParams.set('search', searchTerm);
+
+      const response = await fetch(url.toString(), {
+        cache: 'no-store',
+        headers: {
+          'x-org-id': organization.id,
+          'x-user-role': session?.role || 'member',
+        },
+      });
+
+      const data = (await response.json()) as UserListItem[] | { error?: string };
+
+      if (!response.ok) {
+        throw new Error('error' in data && data.error ? data.error : 'Failed to load users');
       }
+
+      setUsers(Array.isArray(data) ? data : []);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load users');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    void loadUsers();
-  }, [organizationId]);
+    void loadUsers(search);
+  }, [organization?.id]);
 
-  const handleCreateUser = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCreateUser = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!organization?.id) return;
+
+    setSubmitting(true);
+    setError(null);
+
     try {
-      await api.createUser(formData);
-      setFormData({ name: '', email: '', role: 'member' });
-      setShowForm(false);
-      await loadUsers();
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError('Failed to create user');
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-org-id': organization.id,
+          'x-user-role': session?.role || 'member',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json().catch(() => ({ error: 'Failed to create user' }));
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create user');
       }
+
+      setFormData({ name: '', email: '', password: '', role: 'member' });
+      setShowForm(false);
+      await loadUsers(search);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to create user');
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  if (loading) {
-    return <LoadingSpinner />;
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-4">
-          <Link href="/" className="text-gray-600 hover:text-gray-900">
-            Home
-          </Link>
-          <span className="text-gray-300">/</span>
-          <span className="font-medium">Team</span>
-        </div>
-      </nav>
-
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold">Team Members</h1>
-          {userRole === 'admin' && (
-            <button
-              onClick={() => setShowForm(!showForm)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              {showForm ? 'Cancel' : 'Add Member'}
+    <AppShell
+      title="Organization users"
+      subtitle={`Create users, assign roles, and review workload inside ${organization?.name || 'your organization'}.`}
+      actions={
+        <>
+          <Link href="/dashboard" className={styles.secondaryLink}>Dashboard</Link>
+          {isAdmin && (
+            <button type="button" onClick={() => setShowForm((value) => !value)} className={styles.primaryButton}>
+              <PlusIcon className={styles.buttonIcon} />
+              {showForm ? 'Close form' : 'Create user'}
             </button>
           )}
-        </div>
+        </>
+      }
+    >
+      <section className={styles.statGrid}>
+        {stats.map((item) => (
+          <article key={item.label} className={styles.statCard}>
+            <p className={styles.statLabel}>{item.label}</p>
+            <p className={styles.statValue}>{item.value}</p>
+            <p className={styles.statDetail}>{item.detail}</p>
+          </article>
+        ))}
+      </section>
 
-        {error && <ErrorAlert message={error} />}
-
-        {showForm && userRole === 'admin' && (
-          <form onSubmit={handleCreateUser} className="mb-8 p-4 bg-white rounded-lg border">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <input
-                type="text"
-                placeholder="Name"
-                required
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="px-3 py-2 border border-gray-300 rounded-lg placeholder:text-gray-300 placeholder:italic focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <input
-                type="email"
-                placeholder="Email"
-                required
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="px-3 py-2 border border-gray-300 rounded-lg placeholder:text-gray-300 placeholder:italic focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <select
-                value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="member">Member</option>
-                <option value="admin">Admin</option>
-              </select>
+      <section className={styles.contentGrid}>
+        <div className={styles.panel}>
+          <div className={styles.panelHeader}>
+            <div>
+              <p className={styles.panelEyebrow}>Directory</p>
+              <h2 className={styles.panelTitle}>Team members</h2>
             </div>
-            <button
-              type="submit"
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              Create User
-            </button>
-          </form>
-        )}
+            <div className={styles.searchBox}>
+              <SearchIcon className={styles.searchIcon} />
+              <input
+                type="search"
+                placeholder="Search by name or email"
+                value={search}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setSearch(value);
+                  void loadUsers(value);
+                }}
+                className={styles.searchInput}
+              />
+            </div>
+          </div>
 
-        <div className="bg-white rounded-lg border overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Name</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Email</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Role</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr key={user.id} className="border-b hover:bg-gray-50">
-                  <td className="px-6 py-3 text-sm font-medium text-gray-900">{user.name}</td>
-                  <td className="px-6 py-3 text-sm text-gray-600">{user.email}</td>
-                  <td className="px-6 py-3 text-sm">
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${
-                      user.role === 'admin'
-                        ? 'bg-purple-100 text-purple-800'
-                        : 'bg-blue-100 text-blue-800'
-                    }`}>
-                      {user.role}
-                    </span>
-                  </td>
+          {error && <div className={styles.errorBox}>{error}</div>}
+
+          <div className={styles.tableWrap}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Assigned</th>
+                  <th>Created</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {!loading && users.map((user) => (
+                  <tr key={user.id}>
+                    <td>
+                      <div className={styles.userCell}>
+                        <div className={styles.avatar}>{user.name.slice(0, 1).toUpperCase()}</div>
+                        <span>{user.name}</span>
+                      </div>
+                    </td>
+                    <td>{user.email}</td>
+                    <td>
+                      <span className={`${styles.roleBadge} ${user.role === 'admin' ? styles.adminBadge : styles.memberBadge}`}>
+                        {user.role}
+                      </span>
+                    </td>
+                    <td>{user.assignedCustomerCount}</td>
+                    <td>{new Date(user.createdAt).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {loading && <div className={styles.loadingBox}>Loading users...</div>}
+            {!loading && users.length === 0 && <div className={styles.emptyState}>No users found in this organization.</div>}
+          </div>
         </div>
 
-        {users.length === 0 && (
-          <div className="text-center py-8 text-gray-500">No team members yet</div>
-        )}
-      </main>
-    </div>
+        <aside className={styles.sideColumn}>
+          <section className={styles.sideCard}>
+            <div className={styles.sideCardHeader}>
+              <ShieldIcon className={styles.sideIcon} />
+              <div>
+                <p className={styles.panelEyebrow}>Access</p>
+                <h3 className={styles.panelTitle}>Organization restricted</h3>
+              </div>
+            </div>
+            <p className={styles.sideText}>
+              User data is always filtered by organization ID. Admins can create users, assign roles, and manage workload.
+            </p>
+          </section>
+
+          {showForm && isAdmin && (
+            <section className={styles.formCard}>
+              <div className={styles.panelHeader}>
+                <div>
+                  <p className={styles.panelEyebrow}>Create user</p>
+                  <h3 className={styles.panelTitle}>New team member</h3>
+                </div>
+              </div>
+
+              <form onSubmit={handleCreateUser} className={styles.form}>
+                <label className={styles.field}>
+                  <span>Name</span>
+                  <input type="text" required value={formData.name} onChange={(event) => setFormData({ ...formData, name: event.target.value })} placeholder="Jane Doe" />
+                </label>
+
+                <label className={styles.field}>
+                  <span>Email</span>
+                  <input type="email" required value={formData.email} onChange={(event) => setFormData({ ...formData, email: event.target.value })} placeholder="jane@company.com" />
+                </label>
+
+                <label className={styles.field}>
+                  <span>Temporary password</span>
+                  <input type="password" required value={formData.password} onChange={(event) => setFormData({ ...formData, password: event.target.value })} placeholder="Set an initial password" />
+                </label>
+
+                <label className={styles.field}>
+                  <span>Role</span>
+                  <select value={formData.role} onChange={(event) => setFormData({ ...formData, role: event.target.value as 'member' | 'admin' })}>
+                    <option value="member">Member</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </label>
+
+                <button type="submit" className={styles.submitButton} disabled={submitting}>{submitting ? 'Creating...' : 'Create user'}</button>
+              </form>
+            </section>
+          )}
+        </aside>
+      </section>
+    </AppShell>
   );
 }

@@ -15,6 +15,20 @@ export interface UserEntity {
 export const UserSchema = new EntitySchema<UserEntity>({
   name: 'User',
   tableName: 'users',
+  indices: [
+    {
+      name: 'IDX_users_organization_id',
+      columns: ['organizationId'],
+    },
+    {
+      name: 'IDX_users_organization_role',
+      columns: ['organizationId', 'role'],
+    },
+    {
+      name: 'IDX_users_organization_created_at',
+      columns: ['organizationId', 'createdAt'],
+    },
+  ],
   columns: {
     id: {
       type: String,

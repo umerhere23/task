@@ -1,0 +1,243 @@
+.layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+  color: #0f172a;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.5rem 1.25rem;
+  border-right: 1px solid #dbe4f0;
+  background: rgba(255, 255, 255, 0.94);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.brandMark {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #ffffff;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.2);
+}
+
+.brandTextBlock {
+  margin-top: 1rem;
+}
+
+.brandName {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.brandSubtext {
+  margin-top: 0.25rem;
+  color: #475569;
+  font-size: 0.92rem;
+}
+
+.sidebarNav {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.sidebarLink {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  border-radius: 1rem;
+  text-decoration: none;
+  color: #334155;
+  border: 1px solid transparent;
+  background: #f8fafc;
+  font-weight: 700;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.sidebarLinkActive,
+.sidebarLink:hover {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+
+.sidebarLinkIcon,
+.sidebarLinkChevron,
+.buttonIcon,
+.topbarSearchIcon {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+}
+
+.sidebarLinkChevron {
+  margin-left: auto;
+  opacity: 0.55;
+}
+
+.sidebarCard {
+  padding: 1rem;
+  border-radius: 1.25rem;
+  border: 1px solid #dbe4f0;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.sidebarCardLabel {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+.sidebarCardName {
+  margin-top: 0.45rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.sidebarCardMeta {
+  margin-top: 0.25rem;
+  color: #475569;
+}
+
+.mainArea {
+  padding: 1.25rem 1.5rem 1.75rem;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.95rem 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid #dbe4f0;
+  border-radius: 1.25rem;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.05);
+}
+
+.topbarSearch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-width: 280px;
+  padding: 0.75rem 0.95rem;
+  border-radius: 0.95rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+}
+
+.topbarActions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.logoutButton,
+.topbarButton,
+.iconButton,
+.secondaryLink,
+.primaryLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  border-radius: 0.9rem;
+  border: 1px solid transparent;
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.logoutButton {
+  padding: 0.7rem 0.95rem;
+  color: #b91c1c;
+  background: #fff1f2;
+  border-color: #fecdd3;
+}
+
+.topbarButton,
+.iconButton,
+.secondaryLink,
+.primaryLink {
+  padding: 0.7rem 0.95rem;
+  color: #334155;
+  background: #f8fafc;
+  border-color: #dbe4f0;
+}
+
+.iconButton {
+  width: 2.8rem;
+  padding: 0;
+}
+
+.logoutButton:hover,
+.topbarButton:hover,
+.iconButton:hover,
+.secondaryLink:hover,
+.primaryLink:hover,
+.sidebarLink:hover {
+  transform: translateY(-1px);
+}
+
+.pageHeader {
+  margin-bottom: 1rem;
+}
+
+.pageTitle {
+  font-size: clamp(1.75rem, 3vw, 2.4rem);
+  line-height: 1.1;
+  font-weight: 800;
+}
+
+.pageSubtitle {
+  margin-top: 0.45rem;
+  max-width: 56rem;
+  color: #475569;
+  line-height: 1.65;
+}
+
+.content {
+  min-width: 0;
+}
+
+@media (max-width: 1024px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: 0;
+    border-bottom: 1px solid #dbe4f0;
+  }
+
+  .topbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .topbarActions {
+    justify-content: flex-start;
+  }
+}

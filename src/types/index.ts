@@ -69,7 +69,12 @@ export interface CreateNoteDTO {
 export interface CreateUserDTO {
   name: string;
   email: string;
+  password: string;
   role?: string;
+}
+
+export interface UserListDTO extends UserDTO {
+  assignedCustomerCount: number;
 }
 
 export interface ActivityLogDTO {

@@ -11,6 +11,7 @@ export function useAppAuth() {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('session');
+    localStorage.removeItem('auth');
     dispatch(logout());
   };
 

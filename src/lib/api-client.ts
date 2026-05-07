@@ -2,11 +2,13 @@ import {
   ActivityLogDTO,
   CreateCustomerDTO,
   CreateNoteDTO,
+  CreateUserDTO,
   CustomerDTO,
   CustomerListDTO,
   NoteDTO,
   PaginatedResponse,
   UserDTO,
+  UserListDTO,
   UpdateCustomerDTO,
 } from '@/types';
 
@@ -105,10 +107,10 @@ class ApiClient {
 
   // Users
   async listUsers() {
-    return this.request<UserDTO[]>('/users', 'GET');
+    return this.request<UserListDTO[]>('/users', 'GET');
   }
 
-  async createUser(data: { name: string; email: string; role?: string }) {
+  async createUser(data: CreateUserDTO) {
     return this.request<UserDTO>('/users', 'POST', data);
   }
 
