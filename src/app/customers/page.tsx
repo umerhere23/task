@@ -1,7 +1,7 @@
 'use client';
 
-import { CustomerList } from '@/app/components/CustomerList';
-import { useApp } from '@/app/store/AppContext';
+import { CustomerList } from '@/components/shared/CustomerList';
+import { useApp } from '@/hooks/useAuth';
 import Link from 'next/link';
 
 export default function CustomersPage() {

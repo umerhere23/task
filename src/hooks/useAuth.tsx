@@ -1,6 +1,13 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
 import { createApiClient } from '@/lib/api-client';
 
 export interface AppContextType {
@@ -26,16 +33,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const setAuth = useCallback(
-    (userId: string, orgId: string, role: string, name: string) => {
-      setUserId(userId);
-      setOrganizationId(orgId);
-      setUserRole(role);
-      setUserName(name);
-      localStorage.setItem('auth', JSON.stringify({ userId, orgId, role, name }));
-    },
-    []
-  );
+  const setAuth = useCallback((nextUserId: string, orgId: string, role: string, name: string) => {
+    setUserId(nextUserId);
+    setOrganizationId(orgId);
+    setUserRole(role);
+    setUserName(name);
+    localStorage.setItem('auth', JSON.stringify({ userId: nextUserId, orgId, role, name }));
+  }, []);
 
   const clearAuth = useCallback(() => {
     setUserId(null);
@@ -45,37 +49,42 @@ export function AppProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('auth');
   }, []);
 
-  // Load auth from localStorage on mount
   React.useEffect(() => {
     const stored = localStorage.getItem('auth');
-    if (stored) {
-      try {
-        const { userId, orgId, role, name } = JSON.parse(stored);
-        setAuth(userId, orgId, role, name);
-      } catch (e) {
-        localStorage.removeItem('auth');
-      }
+    if (!stored) {
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(stored) as {
+        userId: string;
+        orgId: string;
+        role: string;
+        name: string;
+      };
+      setAuth(parsed.userId, parsed.orgId, parsed.role, parsed.name);
+    } catch {
+      localStorage.removeItem('auth');
     }
   }, [setAuth]);
 
-  return (
-    <AppContext.Provider
-      value={{
-        userId,
-        organizationId,
-        userRole,
-        userName,
-        setAuth,
-        clearAuth,
-        isLoading,
-        setIsLoading,
-        error,
-        setError,
-      }}
-    >
-      {children}
-    </AppContext.Provider>
+  const contextValue = useMemo(
+    () => ({
+      userId,
+      organizationId,
+      userRole,
+      userName,
+      setAuth,
+      clearAuth,
+      isLoading,
+      setIsLoading,
+      error,
+      setError,
+    }),
+    [userId, organizationId, userRole, userName, setAuth, clearAuth, isLoading, error]
   );
+
+  return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;
 }
 
 export function useApp() {
@@ -88,9 +97,14 @@ export function useApp() {
 
 export function useApiClient() {
   const { userId, organizationId, userRole } = useApp();
-  return createApiClient({
-    userId: userId || undefined,
-    organizationId: organizationId || undefined,
-    userRole: userRole || undefined,
-  });
+
+  return useMemo(
+    () =>
+      createApiClient({
+        userId: userId || undefined,
+        organizationId: organizationId || undefined,
+        userRole: userRole || undefined,
+      }),
+    [userId, organizationId, userRole]
+  );
 }

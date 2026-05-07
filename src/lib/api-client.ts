@@ -1,4 +1,14 @@
-import { CustomerDTO, CreateCustomerDTO, UpdateCustomerDTO, NoteDTO, CreateNoteDTO, UserDTO, ActivityLogDTO } from '@/lib/types';
+import {
+  ActivityLogDTO,
+  CreateCustomerDTO,
+  CreateNoteDTO,
+  CustomerDTO,
+  CustomerListDTO,
+  NoteDTO,
+  PaginatedResponse,
+  UserDTO,
+  UpdateCustomerDTO,
+} from '@/types';
 
 interface ApiOptions {
   userId?: string;
@@ -24,7 +34,7 @@ class ApiClient {
   private async request<T>(
     path: string,
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
-    body?: any
+    body?: unknown
   ): Promise<T> {
     const url = `${this.baseUrl}/api${path}`;
     const response = await fetch(url, {
@@ -66,13 +76,7 @@ class ApiClient {
       limit: limit.toString(),
       ...(search && { search }),
     });
-    return this.request<{
-      data: any[];
-      total: number;
-      page: number;
-      limit: number;
-      pages: number;
-    }>(`/customers?${params}`, 'GET');
+    return this.request<PaginatedResponse<CustomerListDTO>>(`/customers?${params}`, 'GET');
   }
 
   async createCustomer(data: CreateCustomerDTO) {
@@ -104,7 +108,7 @@ class ApiClient {
     return this.request<UserDTO[]>('/users', 'GET');
   }
 
-  async createUser(data: {name: string; email: string; role?: string}) {
+  async createUser(data: { name: string; email: string; role?: string }) {
     return this.request<UserDTO>('/users', 'POST', data);
   }
 
@@ -123,7 +127,7 @@ class ApiClient {
       page: page.toString(),
       limit: limit.toString(),
     });
-    return this.request(`/activity-logs?${params}`, 'GET');
+    return this.request<PaginatedResponse<ActivityLogDTO>>(`/activity-logs?${params}`, 'GET');
   }
 }
 

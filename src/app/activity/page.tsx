@@ -1,19 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useApiClient, useApp } from '@/app/store/AppContext';
-import { LoadingSpinner, ErrorAlert, Pagination } from '@/app/components/UI';
+import { useApiClient, useApp } from '@/hooks/useAuth';
+import { LoadingSpinner, ErrorAlert, Pagination } from '@/components/ui/UI';
+import { ActivityLogDTO } from '@/types';
 import Link from 'next/link';
 
-interface ActivityLog {
-  id: string;
-  action: string;
-  entityType: string;
-  entityId: string;
-  performedByName: string;
-  changes: Record<string, any> | null;
-  createdAt: string;
-}
+type ActivityLog = ActivityLogDTO;
 
 const ACTION_LABELS: Record<string, string> = {
   customer_created: 'Customer Created',
@@ -32,26 +25,28 @@ export default function ActivityPage() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
-  const [total, setTotal] = useState(0);
 
   const loadLogs = async (pageNum: number = 1) => {
     try {
       setLoading(true);
       setError(null);
       const result = await api.getActivityLogs(pageNum, 20);
-      setLogs((result as any)?.data || []);
-      setTotal((result as any)?.total || 0);
-      setPages((result as any)?.pages || 1);
+      setLogs(result.data);
+      setPages(result.pages);
       setPage(pageNum);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Failed to load activity logs');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadLogs();
+    void loadLogs();
   }, [organizationId]);
 
   if (loading && logs.length === 0) {

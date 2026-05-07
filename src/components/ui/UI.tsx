@@ -1,17 +1,19 @@
 'use client';
 
+import styles from './UI.module.css';
+
 export function LoadingSpinner() {
   return (
-    <div className="flex items-center justify-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+    <div className={styles.spinner}>
+      <div className={styles.spinnerCircle} />
     </div>
   );
 }
 
 export function ErrorAlert({ message }: { message: string }) {
   return (
-    <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
-      <p className="font-medium">Error</p>
+    <div className={`${styles.alert} ${styles.alertError}`}>
+      <p style={{ fontWeight: 600 }}>Error</p>
       <p className="text-sm">{message}</p>
     </div>
   );
@@ -19,7 +21,7 @@ export function ErrorAlert({ message }: { message: string }) {
 
 export function SuccessAlert({ message }: { message: string }) {
   return (
-    <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-green-700">
+    <div className={`${styles.alert} ${styles.alertSuccess}`}>
       <p className="text-sm">{message}</p>
     </div>
   );
@@ -35,21 +37,21 @@ export function Pagination({
   onPageChange: (page: number) => void;
 }) {
   return (
-    <div className="flex items-center justify-between mt-4">
+    <div className={styles.pagination}>
       <button
         disabled={page === 1}
         onClick={() => onPageChange(page - 1)}
-        className="px-4 py-2 rounded border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+        className={styles.btn}
       >
         Previous
       </button>
-      <span className="text-sm text-gray-600">
+      <span className={styles.smallText}>
         Page {page} of {pages}
       </span>
       <button
         disabled={page === pages}
         onClick={() => onPageChange(page + 1)}
-        className="px-4 py-2 rounded border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+        className={styles.btn}
       >
         Next
       </button>

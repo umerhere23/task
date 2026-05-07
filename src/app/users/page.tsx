@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useApiClient, useApp } from '@/app/store/AppContext';
-import { LoadingSpinner, ErrorAlert } from '@/app/components/UI';
+import { useApiClient, useApp } from '@/hooks/useAuth';
+import { LoadingSpinner, ErrorAlert } from '@/components/ui/UI';
 import Link from 'next/link';
 
 interface User {
@@ -27,15 +27,19 @@ export default function UsersPage() {
       setError(null);
       const result = await api.listUsers();
       setUsers(result);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Failed to load users');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadUsers();
+    void loadUsers();
   }, [organizationId]);
 
   const handleCreateUser = async (e: React.FormEvent) => {
@@ -45,8 +49,12 @@ export default function UsersPage() {
       setFormData({ name: '', email: '', role: 'member' });
       setShowForm(false);
       await loadUsers();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Failed to create user');
+      }
     }
   };
 

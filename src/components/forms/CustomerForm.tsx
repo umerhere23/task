@@ -1,18 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { LoadingSpinner, ErrorAlert, SuccessAlert } from './UI';
-import { useApp, useApiClient } from '@/app/store/AppContext';
-import { CustomerDTO } from '@/lib/types';
+import { useEffect, useState, type FormEvent } from 'react';
+import { LoadingSpinner, ErrorAlert } from '@/components/ui/UI';
+import { CustomerDTO, CreateCustomerDTO } from '@/types';
 
 interface CustomerFormProps {
   customer?: CustomerDTO;
-  onSubmit: (data: any) => Promise<void>;
+  onSubmit: (data: CreateCustomerDTO) => Promise<void>;
   isLoading?: boolean;
 }
 
 export function CustomerForm({ customer, onSubmit, isLoading = false }: CustomerFormProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<CreateCustomerDTO>({
     name: customer?.name || '',
     email: customer?.email || '',
     phone: customer?.phone || '',
@@ -20,23 +19,29 @@ export function CustomerForm({ customer, onSubmit, isLoading = false }: Customer
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (customer) {
-      setFormData({
-        name: customer.name,
-        email: customer.email,
-        phone: customer.phone || '',
-      });
+    if (!customer) {
+      return;
     }
+
+    setFormData({
+      name: customer.name,
+      email: customer.email,
+      phone: customer.phone || '',
+    });
   }, [customer]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
 
     try {
       await onSubmit(formData);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+        return;
+      }
+      setError('Failed to submit customer form');
     }
   };
 
@@ -70,7 +75,7 @@ export function CustomerForm({ customer, onSubmit, isLoading = false }: Customer
         <label className="block text-sm font-medium text-gray-700 mb-1">Phone (Optional)</label>
         <input
           type="tel"
-          value={formData.phone}
+          value={formData.phone || ''}
           onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />

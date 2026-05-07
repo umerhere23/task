@@ -224,6 +224,66 @@ src/
     └── api-client.ts            # Frontend API client
 ```
 
+## Preferred Frontend Structure
+
+```text
+project-root/
+|
++-- src/
+|   +-- app/                    # Next.js App Router
+|   |   +-- (auth)/
+|   |   |   +-- login/
+|   |   |   +-- register/
+|   |   |
+|   |   +-- dashboard/
+|   |   +-- api/
+|   |   +-- layout.tsx
+|   |   +-- page.tsx
+|   |   +-- globals.css
+|   |
+|   +-- components/
+|   |   +-- ui/
+|   |   +-- forms/
+|   |   +-- layout/
+|   |   +-- shared/
+|   |
+|   +-- lib/
+|   |   +-- supabase/
+|   |   |   +-- client.ts
+|   |   |   +-- server.ts
+|   |   |   +-- middleware.ts
+|   |   |
+|   |   +-- db.ts
+|   |   +-- auth.ts
+|   |   +-- utils.ts
+|   |
+|   +-- hooks/
+|   |   +-- useAuth.ts
+|   |   +-- useUser.ts
+|   |
+|   +-- services/
+|   |   +-- auth.service.ts
+|   |   +-- user.service.ts
+|   |   +-- product.service.ts
+|   |
+|   +-- types/
+|   |   +-- auth.types.ts
+|   |   +-- db.types.ts
+|   |   +-- index.ts
+|   |
+|   +-- constants/
+|       +-- index.ts
+|
++-- public/
+|
++-- .env.local
++-- middleware.ts
++-- next.config.ts
++-- tsconfig.json
++-- package.json
++-- README.md
+```
+
 ## Setup Instructions
 
 ### Prerequisites

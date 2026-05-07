@@ -1,4 +1,5 @@
-// Client-side types for frontend (derived from server types)
+export * from '@/types/auth.types';
+export * from '@/types/db.types';
 
 export interface OrganizationDTO {
   id: string;
@@ -48,7 +49,6 @@ export interface NoteDTO {
   createdAt: string;
 }
 
-// DTOs for requests
 export interface CreateCustomerDTO {
   name: string;
   email: string;
@@ -78,7 +78,7 @@ export interface ActivityLogDTO {
   entityType: string;
   entityId: string;
   performedByName: string;
-  changes: Record<string, any> | null;
+  changes: Record<string, unknown> | null;
   createdAt: string;
 }
 

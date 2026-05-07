@@ -1,11 +1,11 @@
 'use client';
 
-import { useApp } from '@/app/store/AppContext';
+import { useApp } from '@/hooks/useAuth';
 import Link from 'next/link';
 import { useState } from 'react';
 
 export default function Home() {
-  const { userId, organizationId, setAuth, clearAuth } = useApp();
+  const { organizationId, clearAuth } = useApp();
 
   if (!organizationId) {
     return <SetupPage />;
@@ -90,8 +90,12 @@ function SetupPage() {
 
       // Set auth with the admin credentials
       setAuth(data.admin.id, data.organization.id, data.admin.role, data.admin.name);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Failed to create organization');
+      }
     } finally {
       setLoading(false);
     }

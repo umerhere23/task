@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import { useApiClient, useApp } from '@/app/store/AppContext';
-import { LoadingSpinner, ErrorAlert, Pagination } from './UI';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useApiClient, useApp } from '@/hooks/useAuth';
+import { LoadingSpinner, ErrorAlert, Pagination } from '@/components/ui/UI';
 
 interface Customer {
   id: string;
@@ -21,10 +21,9 @@ export function CustomerList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
   const [pages, setPages] = useState(1);
   const [search, setSearch] = useState('');
-  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const loadCustomers = async (pageNum: number = 1, searchTerm: string = '') => {
     try {
@@ -32,29 +31,40 @@ export function CustomerList() {
       setError(null);
       const result = await api.listCustomers(pageNum, 20, searchTerm);
       setCustomers(result.data);
-      setTotal(result.total);
       setPages(result.pages);
       setPage(pageNum);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Failed to load customers');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadCustomers();
+    void loadCustomers();
   }, [organizationId]);
+
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
-    if (searchTimeout) clearTimeout(searchTimeout);
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
 
-    const timeout = setTimeout(() => {
-      loadCustomers(1, value);
+    searchTimeoutRef.current = setTimeout(() => {
+      void loadCustomers(1, value);
     }, 300);
-
-    setSearchTimeout(timeout);
   };
 
   if (loading && customers.length === 0) {
@@ -123,7 +133,9 @@ export function CustomerList() {
         <Pagination
           page={page}
           pages={pages}
-          onPageChange={(newPage) => loadCustomers(newPage, search)}
+          onPageChange={(newPage) => {
+            void loadCustomers(newPage, search);
+          }}
         />
       )}
     </div>
