@@ -23,7 +23,7 @@ class ApiClient {
   private headers: Record<string, string>;
 
   constructor(options: ApiOptions = {}) {
-    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    this.baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
     this.headers = {
       'Content-Type': 'application/json',
     };
