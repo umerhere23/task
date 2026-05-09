@@ -119,22 +119,46 @@ class ApiClient {
     return this.request<UserDTO>(`/users/${id}`, 'PUT', data);
   }
 
-  // Notes
-  async addNote(customerId: string, data: CreateNoteDTO) {
-    return this.request<NoteDTO>(`/customers/${customerId}/notes`, 'POST', data);
-  }
-
-  async getNotes(customerId: string) {
+  // Notes API
+  async getNotes(customerId: string): Promise<NoteDTO[]> {
     return this.request<NoteDTO[]>(`/customers/${customerId}/notes`, 'GET');
   }
 
-  // Activity Logs
-  async getActivityLogs(page: number = 1, limit: number = 20) {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
-    });
-    return this.request<PaginatedResponse<ActivityLogDTO>>(`/activity-logs?${params}`, 'GET');
+  async addNote(customerId: string, data: CreateNoteDTO): Promise<NoteDTO> {
+    return this.request<NoteDTO>(`/customers/${customerId}/notes`, 'POST', data);
+  }
+
+  async deleteNote(noteId: string): Promise<void> {
+    return this.request<void>(`/notes/${noteId}`, 'DELETE');
+  }
+
+  // Activity Logs API
+  async getActivityLogs(params?: {
+    entityType?: string;
+    entityId?: string;
+    performedBy?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<{ data: ActivityLogDTO[]; total: number; pages: number }> {
+    const searchParams = new URLSearchParams();
+    if (params?.entityType) searchParams.append('entityType', params.entityType);
+    if (params?.entityId) searchParams.append('entityId', params.entityId);
+    if (params?.performedBy) searchParams.append('performedBy', params.performedBy);
+    if (params?.page) searchParams.append('page', params.page.toString());
+    if (params?.limit) searchParams.append('limit', params.limit.toString());
+    
+    const query = searchParams.toString();
+    return this.request<{ data: ActivityLogDTO[]; total: number; pages: number }>(
+      `/activity-logs${query ? `?${query}` : ''}`,
+      'GET'
+    );
+  }
+
+  async getCustomerActivityLogs(customerId: string, page: number = 1, limit: number = 20): Promise<{ data: ActivityLogDTO[]; total: number; pages: number }> {
+    return this.request<{ data: ActivityLogDTO[]; total: number; pages: number }>(
+      `/customers/${customerId}/activity?page=${page}&limit=${limit}`,
+      'GET'
+    );
   }
 }
 

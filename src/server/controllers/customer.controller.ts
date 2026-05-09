@@ -9,6 +9,7 @@ import {
   restoreCustomerModel,
 } from '@/server/models/customer.model';
 import { HttpError, parseJsonBody } from '@/server/middleware/http.middleware';
+import { ActivityLogger } from '@/lib/activity-logger';
 
 export async function listCustomersController(request: NextRequest): Promise<NextResponse> {
   let organizationId = request.headers.get('x-org-id');
@@ -62,10 +63,14 @@ export async function getCustomerController(request: NextRequest, { params }: { 
 
 export async function createCustomerController(request: NextRequest): Promise<NextResponse> {
   let organizationId = request.headers.get('x-org-id');
+  let userId = request.headers.get('x-user-id');
+  let userName = request.headers.get('x-user-name');
   
   // Fallback for development - use first organization if no org-id provided
   if (!organizationId && process.env.NODE_ENV === 'development') {
     organizationId = '02c70e6b-ae37-472e-81b9-ea40577ed3f7';
+    userId = userId || 'dev-user';
+    userName = userName || 'Development User';
     console.warn('Using fallback organization ID for development');
   }
   
@@ -94,6 +99,17 @@ export async function createCustomerController(request: NextRequest): Promise<Ne
     email,
     phone: typeof phone === 'string' ? phone : undefined,
   });
+
+  // Log activity
+  if (userId && userName) {
+    await ActivityLogger.logCustomerCreated(
+      customer.id,
+      userId,
+      userName,
+      organizationId,
+      { name, email, phone }
+    );
+  }
 
   return NextResponse.json(customer, { status: 201 });
 }

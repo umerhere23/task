@@ -45,9 +45,26 @@ export interface NoteDTO {
   id: string;
   content: string;
   customerId: string;
+  organizationId: string;
   createdByUserId: string;
   createdByName: string;
   createdAt: string;
+}
+
+export interface CreateNoteDTO {
+  content: string;
+}
+
+export interface ActivityLogDTO {
+  id: string;
+  entityType: string;
+  entityId: string;
+  action: string;
+  performedBy: string;
+  performedByName: string;
+  organizationId: string;
+  metadata?: any;
+  timestamp: string;
 }
 
 export interface CreateCustomerDTO {

@@ -30,7 +30,7 @@ export default function ActivityPage() {
     try {
       setLoading(true);
       setError(null);
-      const result = await api.getActivityLogs(pageNum, 20);
+      const result = await api.getActivityLogs({ page: pageNum, limit: 20 });
       setLogs(result.data);
       setPages(result.pages);
       setPage(pageNum);
