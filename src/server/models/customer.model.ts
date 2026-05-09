@@ -227,8 +227,9 @@ export async function assignCustomerModel(
 ): Promise<CustomerDTO | null> {
   const dataSource = await ensureDatabaseInitialized();
 
-  // Use raw SQL with transaction and row-level locking
-  const result = await dataSource.transaction(async (manager) => {
+  // Use SERIALIZABLE transaction with row-level locking to prevent race conditions
+  // This ensures that concurrent assignment requests are executed sequentially
+  const result = await dataSource.transaction('SERIALIZABLE', async (manager) => {
     // Lock the customer row to prevent concurrent assignments
     const customerQuery = await manager.query(
       `SELECT id, name, email, phone, assigned_to_id, created_at 
@@ -258,6 +259,7 @@ export async function assignCustomerModel(
     }
 
     // Count active customers for this user (excluding deleted ones)
+    // This count is read within the SERIALIZABLE transaction to prevent race conditions
     const countQuery = await manager.query(
       `SELECT COUNT(*) as count 
        FROM customers 
@@ -268,6 +270,7 @@ export async function assignCustomerModel(
     const currentActiveCount = parseInt(countQuery[0].count, 10);
 
     // Business rule: Max 5 active customers per user
+    // This check is guaranteed to be accurate due to SERIALIZABLE isolation
     if (currentActiveCount >= 5) {
       throw new Error(`User already has maximum active customers (${currentActiveCount}/5)`);
     }

@@ -80,10 +80,6 @@ export interface UpdateCustomerDTO {
   assignedToId?: string | null;
 }
 
-export interface CreateNoteDTO {
-  content: string;
-}
-
 export interface CreateUserDTO {
   name: string;
   email: string;
@@ -93,16 +89,6 @@ export interface CreateUserDTO {
 
 export interface UserListDTO extends UserDTO {
   assignedCustomerCount: number;
-}
-
-export interface ActivityLogDTO {
-  id: string;
-  action: string;
-  entityType: string;
-  entityId: string;
-  performedByName: string;
-  changes: Record<string, unknown> | null;
-  createdAt: string;
 }
 
 export interface PaginatedResponse<T> {

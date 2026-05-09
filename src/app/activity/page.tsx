@@ -3,18 +3,29 @@
 import { useState, useEffect } from 'react';
 import { useApiClient, useApp } from '@/hooks/useAuth';
 import { LoadingSpinner, ErrorAlert, Pagination } from '@/components/ui/UI';
-import { ActivityLogDTO } from '@/types';
 import { AppShell } from '@/components/layout/AppShell';
 
-type ActivityLog = ActivityLogDTO;
+interface ActivityLog {
+  id: string;
+  entityType: string;
+  entityId: string;
+  action: string;
+  performedBy: string;
+  performedByName: string;
+  organizationId: string;
+  metadata?: Record<string, any>;
+  timestamp: string;
+}
 
-const ACTION_LABELS: Record<string, string> = {
-  customer_created: 'Customer Created',
-  customer_updated: 'Customer Updated',
-  customer_deleted: 'Customer Deleted',
-  customer_restored: 'Customer Restored',
-  customer_assigned: 'Customer Assigned',
-  note_added: 'Note Added',
+const ACTION_LABELS: Record<string, { label: string; color: string }> = {
+  customer_created: { label: 'Customer Created', color: 'bg-green-100 text-green-800' },
+  customer_updated: { label: 'Customer Updated', color: 'bg-blue-100 text-blue-800' },
+  customer_deleted: { label: 'Customer Deleted', color: 'bg-red-100 text-red-800' },
+  customer_restored: { label: 'Customer Restored', color: 'bg-purple-100 text-purple-800' },
+  customer_assigned: { label: 'Customer Assigned', color: 'bg-orange-100 text-orange-800' },
+  note_added: { label: 'Note Added', color: 'bg-indigo-100 text-indigo-800' },
+  note_edited: { label: 'Note Edited', color: 'bg-indigo-100 text-indigo-800' },
+  note_deleted: { label: 'Note Deleted', color: 'bg-red-100 text-red-800' },
 };
 
 export default function ActivityPage() {
@@ -73,25 +84,34 @@ export default function ActivityPage() {
               {logs.map((log) => (
                 <tr key={log.id} className="border-b hover:bg-gray-50">
                   <td className="px-6 py-3 text-sm font-medium">
-                    <span className="px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                      {ACTION_LABELS[log.action] || log.action}
-                    </span>
+                    {(() => {
+                      const actionInfo = ACTION_LABELS[log.action];
+                      return (
+                        <span className={`px-3 py-1 rounded text-xs font-semibold ${actionInfo?.color || 'bg-gray-100 text-gray-800'}`}>
+                          {actionInfo?.label || log.action}
+                        </span>
+                      );
+                    })()}
                   </td>
                   <td className="px-6 py-3 text-sm text-gray-600">
                     {log.entityType} ({log.entityId.substring(0, 8)}...)
                   </td>
                   <td className="px-6 py-3 text-sm text-gray-600">{log.performedByName}</td>
                   <td className="px-6 py-3 text-sm">
-                    {log.changes ? (
-                      <code className="text-xs bg-gray-100 px-2 py-1 rounded">
-                        {Object.keys(log.changes).join(', ')}
-                      </code>
+                    {log.metadata ? (
+                      <div className="space-y-1">
+                        {Object.entries(log.metadata).map(([key, value]) => (
+                          <div key={key} className="text-xs">
+                            <span className="font-medium">{key}:</span> {JSON.stringify(value)}
+                          </div>
+                        ))}
+                      </div>
                     ) : (
                       '—'
                     )}
                   </td>
                   <td className="px-6 py-3 text-sm text-gray-600">
-                    {new Date(log.createdAt).toLocaleString()}
+                    {new Date(log.timestamp).toLocaleString()}
                   </td>
                 </tr>
               ))}
