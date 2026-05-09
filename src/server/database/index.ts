@@ -16,6 +16,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
   database: process.env.DB_NAME || 'crm_db',
+  ssl: (process.env.DB_SSL || 'false') === 'true' ? { rejectUnauthorized: false } : false,
   entities: [OrganizationSchema, UserSchema, CustomerSchema, NoteEntity, ActivityLogEntity],
   synchronize,
   logging,
