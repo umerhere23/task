@@ -23,6 +23,14 @@ export function useAuthenticatedApiClient() {
       headers['x-org-id'] = organization.id;
     }
 
+    if (session?.userId) {
+      headers['x-user-id'] = session.userId;
+    }
+
+    if (session?.name) {
+      headers['x-user-name'] = session.name;
+    }
+
     if (session?.role) {
       headers['x-user-role'] = session.role;
     }

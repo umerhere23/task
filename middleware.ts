@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server';
 function applyCorsHeaders(response: NextResponse) {
   response.headers.set('Access-Control-Allow-Origin', '*');
   response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-user-id, x-org-id, x-user-role');
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-user-id, x-user-name, x-org-id, x-user-role');
   response.headers.set('Access-Control-Max-Age', '86400');
   return response;
 }

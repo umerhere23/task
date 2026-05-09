@@ -96,15 +96,16 @@ export function useApp() {
 }
 
 export function useApiClient() {
-  const { userId, organizationId, userRole } = useApp();
+  const { userId, organizationId, userRole, userName } = useApp();
 
   return useMemo(
     () =>
       createApiClient({
         userId: userId || undefined,
+        userName: userName || undefined,
         organizationId: organizationId || undefined,
         userRole: userRole || undefined,
       }),
-    [userId, organizationId, userRole]
+    [userId, organizationId, userRole, userName]
   );
 }

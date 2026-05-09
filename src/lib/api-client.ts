@@ -14,6 +14,7 @@ import {
 
 interface ApiOptions {
   userId?: string;
+  userName?: string;
   organizationId?: string;
   userRole?: string;
 }
@@ -29,6 +30,7 @@ class ApiClient {
     };
 
     if (options.userId) this.headers['x-user-id'] = options.userId;
+    if (options.userName) this.headers['x-user-name'] = options.userName;
     if (options.organizationId) this.headers['x-org-id'] = options.organizationId;
     if (options.userRole) this.headers['x-user-role'] = options.userRole;
   }
