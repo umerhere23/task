@@ -91,6 +91,54 @@
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
+.passwordFieldWrap {
+  position: relative;
+}
+
+.passwordInput {
+  padding-right: 5.5rem;
+}
+
+.passwordToggle {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 1px solid #dbe4f0;
+  background: #ffffff;
+  color: #2563eb;
+  border-radius: 0.7rem;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background-color 0.2s;
+}
+
+.passwordToggle:hover {
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+
+.passwordRules {
+  margin-top: 0.65rem;
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+}
+
+.passwordRule {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #6b7280;
+}
+
+.passwordRuleMet {
+  color: #047857;
+}
+
 .error {
   background-color: #fef2f2;
   border: 1px solid #fecaca;

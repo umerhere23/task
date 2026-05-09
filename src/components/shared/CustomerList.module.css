@@ -1,57 +1,75 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.95rem;
 }
 
 .searchBar {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.65rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.searchField {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid #dbe4f0;
+  border-radius: 1rem;
+  background: #ffffff;
+  min-width: 220px;
 }
 
 .searchInput {
   flex: 1;
-  padding: 0.5rem 1rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  background-color: #ffffff;
-  color: #111827;
-  font-size: 1rem;
+  border: 0;
+  background: transparent;
+  color: #0f172a;
+  font-size: 0.95rem;
+  outline: none;
 }
 
 .searchInput::placeholder {
-  color: #d1d5db;
-  font-style: italic;
+  color: #94a3b8;
 }
 
-.searchInput:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+.searchIcon,
+.buttonIcon,
+.actionIcon {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
 }
 
 .newButton {
-  padding: 0.5rem 1rem;
-  background-color: #2563eb;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  font-weight: 500;
+  padding: 0.85rem 1rem;
+  background: #0f172a;
+  color: #ffffff;
+  border: 1px solid #0f172a;
+  border-radius: 1rem;
+  font-weight: 700;
   cursor: pointer;
   text-decoration: none;
-  display: inline-block;
-  transition: background-color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
 .newButton:hover {
-  background-color: #1d4ed8;
+  background: #111827;
+  transform: translateY(-1px);
 }
 
 .tableContainer {
   background-color: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
+  border: 1px solid #dbe4f0;
+  border-radius: 1.1rem;
   overflow: hidden;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04);
 }
 
 .table {
@@ -60,8 +78,8 @@
 }
 
 .tableHead {
-  background-color: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .tableHeadRow {
@@ -69,11 +87,13 @@
 }
 
 .tableHeadCell {
-  padding: 0.75rem 1.5rem;
+  padding: 0.95rem 1.1rem;
   text-align: left;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #374151;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
 }
 
 .tableBody {
@@ -81,39 +101,40 @@
 }
 
 .tableBodyRow {
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e2e8f0;
   transition: background-color 0.2s;
 }
 
 .tableBodyRow:hover {
-  background-color: #f9fafb;
+  background-color: #f8fafc;
 }
 
 .tableCell {
-  padding: 0.75rem 1.5rem;
+  padding: 0.95rem 1.1rem;
   font-size: 0.875rem;
   color: #4b5563;
+  vertical-align: top;
 }
 
 .tableCellBold {
-  font-weight: 500;
-  color: #111827;
+  font-weight: 600;
+  color: #0f172a;
 }
 
 .actionLink {
-  color: #2563eb;
+  color: #0f172a;
   text-decoration: none;
-  font-weight: 500;
-  transition: color 0.2s;
+  font-weight: 700;
+  transition: color 0.2s, transform 0.2s;
 }
 
 .actionLink:hover {
-  color: #1e40af;
+  color: #1d4ed8;
 }
 
 .emptyState {
   text-align: center;
-  padding: 2rem;
+  padding: 1.75rem;
   color: #6b7280;
 }
 
@@ -123,30 +144,67 @@
   gap: 0.5rem;
   color: #374151;
   font-size: 0.875rem;
+  padding: 0.8rem 0.95rem;
+  border: 1px solid #dbe4f0;
+  border-radius: 1rem;
+  background: #ffffff;
 }
 
 .actionButton {
-  background: none;
-  border: 1px solid transparent;
-  color: #374151;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.375rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #f8fafc;
+  border: 1px solid #dbe4f0;
+  color: #0f172a;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 700;
   cursor: pointer;
-  margin-left: 0.5rem;
+  transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .actionButton:hover {
-  background-color: #f3f4f6;
+  background-color: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.actionDangerButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  color: #be123c;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.actionDangerButton:hover {
+  background: #ffe4e6;
+  border-color: #fda4af;
+}
+
+.actionGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
 }
 
 .deletedLabel {
   color: #9ca3af;
-  font-size: 0.875rem;
-  margin-left: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
 }
 
 .loadingBox {
-  padding: 1rem;
+  padding: 1.25rem;
   text-align: center;
   color: #374151;
 }
@@ -155,47 +213,18 @@
   padding: 0.75rem 1rem;
   background: #fee2e2;
   color: #991b1b;
-  border-radius: 0.375rem;
-  margin-bottom: 0.5rem;
+  border-radius: 0.95rem;
+  margin-bottom: 0.25rem;
 }
 
 .tableWrap {
   overflow: auto;
 }
-/* Panel styles to align with AppShell/Dashboard look */
-.panel {
-  background: rgba(255, 255, 255, 0.96);
-  border: 1px solid #dbe4f0;
-  border-radius: 1.25rem;
-  padding: 1rem;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04);
-}
-
-.panelHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 0.75rem;
-}
-
-.panelTitle {
-  font-size: 1.05rem;
-  font-weight: 800;
-  color: #0f172a;
-}
-
-.panelEyebrow {
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: #64748b;
-  font-weight: 800;
-}
 
 @media (max-width: 768px) {
   .searchBar {
     flex-direction: column;
+    align-items: stretch;
   }
 
   .newButton,
@@ -275,5 +304,9 @@
 
   .tableCell:last-child::before {
     min-width: 72px;
+  }
+
+  .actionGroup {
+    width: 100%;
   }
 }

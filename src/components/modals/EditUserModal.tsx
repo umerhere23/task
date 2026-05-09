@@ -19,6 +19,24 @@ interface EditUserModalProps {
   onUpdate: () => void;
 }
 
+interface PasswordValidation {
+  minLength: boolean;
+  hasUpperCase: boolean;
+  hasLowerCase: boolean;
+  hasNumber: boolean;
+  hasSpecialChar: boolean;
+}
+
+function validatePassword(password: string): PasswordValidation {
+  return {
+    minLength: password.length >= 8,
+    hasUpperCase: /[A-Z]/.test(password),
+    hasLowerCase: /[a-z]/.test(password),
+    hasNumber: /[0-9]/.test(password),
+    hasSpecialChar: /[!@#$%^&*]/.test(password),
+  };
+}
+
 export function EditUserModal({ user, mode, isOpen, onClose, onUpdate }: EditUserModalProps) {
   const api = useApiClient();
   const [formData, setFormData] = useState({
@@ -29,7 +47,17 @@ export function EditUserModal({ user, mode, isOpen, onClose, onUpdate }: EditUse
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordValidation, setPasswordValidation] = useState<PasswordValidation>({
+    minLength: false,
+    hasUpperCase: false,
+    hasLowerCase: false,
+    hasNumber: false,
+    hasSpecialChar: false,
+  });
   const isCreateMode = mode === 'create';
+
+  const allPasswordRequirementsMet = Object.values(passwordValidation).every(Boolean);
 
   useEffect(() => {
     if (user && !isCreateMode) {
@@ -46,12 +74,32 @@ export function EditUserModal({ user, mode, isOpen, onClose, onUpdate }: EditUse
         password: '',
         role: 'member',
       });
+      setPasswordValidation({
+        minLength: false,
+        hasUpperCase: false,
+        hasLowerCase: false,
+        hasNumber: false,
+        hasSpecialChar: false,
+      });
+      setShowPassword(false);
     }
     setError(null);
   }, [isCreateMode, user, isOpen]);
 
+  const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const password = event.target.value;
+
+    setFormData({ ...formData, password });
+    setPasswordValidation(validatePassword(password));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (isCreateMode && !allPasswordRequirementsMet) {
+      setError('Password does not meet all requirements');
+      return;
+    }
 
     setSubmitting(true);
     setError(null);
@@ -134,14 +182,46 @@ export function EditUserModal({ user, mode, isOpen, onClose, onUpdate }: EditUse
           {isCreateMode && (
             <div className={styles.field}>
               <label htmlFor="password">Password</label>
-              <input
-                id="password"
-                type="password"
-                required
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                placeholder="Set an initial password"
-              />
+              <div className={styles.passwordFieldWrap}>
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={formData.password}
+                  onChange={handlePasswordChange}
+                  placeholder="Set an initial password"
+                  className={styles.passwordInput}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((current) => !current)}
+                  className={styles.passwordToggle}
+                >
+                  {showPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
+              <div className={styles.passwordRules}>
+                <div className={`${styles.passwordRule} ${passwordValidation.minLength ? styles.passwordRuleMet : ''}`}>
+                  <span>{passwordValidation.minLength ? '✓' : '○'}</span>
+                  <span>At least 8 characters</span>
+                </div>
+                <div className={`${styles.passwordRule} ${passwordValidation.hasUpperCase ? styles.passwordRuleMet : ''}`}>
+                  <span>{passwordValidation.hasUpperCase ? '✓' : '○'}</span>
+                  <span>One uppercase letter (A-Z)</span>
+                </div>
+                <div className={`${styles.passwordRule} ${passwordValidation.hasLowerCase ? styles.passwordRuleMet : ''}`}>
+                  <span>{passwordValidation.hasLowerCase ? '✓' : '○'}</span>
+                  <span>One lowercase letter (a-z)</span>
+                </div>
+                <div className={`${styles.passwordRule} ${passwordValidation.hasNumber ? styles.passwordRuleMet : ''}`}>
+                  <span>{passwordValidation.hasNumber ? '✓' : '○'}</span>
+                  <span>One number (0-9)</span>
+                </div>
+                <div className={`${styles.passwordRule} ${passwordValidation.hasSpecialChar ? styles.passwordRuleMet : ''}`}>
+                  <span>{passwordValidation.hasSpecialChar ? '✓' : '○'}</span>
+                  <span>One special character (!@#$%^&*)</span>
+                </div>
+              </div>
             </div>
           )}
 
@@ -157,7 +237,7 @@ export function EditUserModal({ user, mode, isOpen, onClose, onUpdate }: EditUse
             <button
               type="submit"
               className={styles.submitButton}
-              disabled={submitting}
+              disabled={submitting || (isCreateMode && !allPasswordRequirementsMet)}
             >
               {submitting ? (isCreateMode ? 'Creating...' : 'Updating...') : (isCreateMode ? 'Create User' : 'Update User')}
             </button>

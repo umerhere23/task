@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { useApiClient } from '@/hooks/useAuth';
 import { useGlobalToast } from '@/hooks/useGlobalToast';
 import { LoadingSpinner } from '@/components/ui/UI';
@@ -12,7 +12,7 @@ interface Customer {
   email: string;
   phone: string | null;
   assignedToId: string | null;
-  assignedToName: string | null;
+  assignedToName?: string | null;
 }
 
 interface User {
@@ -93,7 +93,7 @@ export function EditCustomerModal({ customer, isOpen, onClose, onUpdate }: EditC
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!customer) return;
 
@@ -212,7 +212,7 @@ export function EditCustomerModal({ customer, isOpen, onClose, onUpdate }: EditC
           <button onClick={onClose} className={styles.closeButton}>&times;</button>
         </div>
 
-        <div style={{ padding: '1.5rem', maxHeight: '80vh', overflowY: 'auto' }}>
+        <div className={styles.body}>
           {error && <div className={styles.error}>{error}</div>}
 
           <form onSubmit={handleSubmit} className={styles.form}>
@@ -273,21 +273,20 @@ export function EditCustomerModal({ customer, isOpen, onClose, onUpdate }: EditC
             </div>
           </form>
 
-          {/* Assignment Section */}
-          <div style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: '1px solid #e5e7eb' }}>
-            <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: '600' }}>Assign To</h3>
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <div className={styles.section}>
+            <div className={styles.sectionHeader}>
+              <h3>Assign to</h3>
+              {loadingUsers && <span className={styles.helper}>Loading users...</span>}
+            </div>
+            <div className={styles.row}>
+              <label htmlFor="customer-assignee" className={styles.srOnly}>Assign to user</label>
               <select
+                id="customer-assignee"
                 value={selectedUserId || ''}
                 onChange={(e) => setSelectedUserId(e.target.value || null)}
                 disabled={loadingUsers || assigningUser}
-                style={{
-                  flex: 1,
-                  padding: '0.5rem',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '0.375rem',
-                  fontSize: '0.875rem',
-                }}
+                title="Assign customer to user"
+                className={styles.select}
               >
                 <option value="">Select a user...</option>
                 {users.map((user) => (
@@ -300,116 +299,62 @@ export function EditCustomerModal({ customer, isOpen, onClose, onUpdate }: EditC
                 type="button"
                 onClick={handleAssignUser}
                 disabled={!selectedUserId || assigningUser || loadingUsers}
-                style={{
-                  padding: '0.5rem 1rem',
-                  backgroundColor: '#3b82f6',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '0.375rem',
-                  cursor: 'pointer',
-                  fontSize: '0.875rem',
-                  fontWeight: '500',
-                  opacity: (!selectedUserId || assigningUser) ? 0.5 : 1,
-                }}
+                className={styles.assignButton}
               >
                 {assigningUser ? 'Assigning...' : 'Assign'}
               </button>
             </div>
-            {loadingUsers && <div style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: '#6b7280' }}>Loading users...</div>}
           </div>
 
-          {/* Notes Section */}
-          <div style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: '1px solid #e5e7eb' }}>
-            <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: '600' }}>Notes</h3>
+          <div className={styles.section}>
+            <div className={styles.sectionHeader}>
+              <h3>Notes</h3>
+            </div>
 
-            {/* Add Note */}
-            <div style={{ marginBottom: '1rem', display: 'flex', gap: '0.5rem' }}>
+            <div className={styles.noteComposer}>
               <input
                 type="text"
                 value={newNote}
                 onChange={(e) => setNewNote(e.target.value)}
                 placeholder="Add a note..."
                 disabled={addingNote}
-                style={{
-                  flex: 1,
-                  padding: '0.5rem',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '0.375rem',
-                  fontSize: '0.875rem',
-                }}
+                className={styles.noteInput}
               />
               <button
                 type="button"
                 onClick={handleAddNote}
                 disabled={!newNote.trim() || addingNote}
-                style={{
-                  padding: '0.5rem 1rem',
-                  backgroundColor: '#10b981',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '0.375rem',
-                  cursor: 'pointer',
-                  fontSize: '0.875rem',
-                  fontWeight: '500',
-                  opacity: (!newNote.trim() || addingNote) ? 0.5 : 1,
-                }}
+                className={styles.noteAddButton}
               >
                 {addingNote ? 'Adding...' : 'Add'}
               </button>
             </div>
 
-            {/* Notes List */}
             {loadingNotes ? (
-              <div style={{ textAlign: 'center', padding: '1rem' }}>
+              <div className={styles.centeredLoading}>
                 <LoadingSpinner />
               </div>
             ) : notes.length === 0 ? (
-              <div style={{ color: '#6b7280', fontSize: '0.875rem', padding: '1rem', backgroundColor: '#f9fafb', borderRadius: '0.375rem' }}>
-                No notes yet
-              </div>
+              <div className={styles.emptyNotes}>No notes yet</div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div className={styles.notesList}>
                 {notes.map((note) => (
-                  <div
-                    key={note.id}
-                    style={{
-                      padding: '0.75rem',
-                      backgroundColor: '#f9fafb',
-                      borderRadius: '0.375rem',
-                      borderLeft: '3px solid #3b82f6',
-                    }}
-                  >
+                  <div key={note.id} className={styles.noteCard}>
                     {editingNoteId === note.id ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      <div className={styles.noteEditor}>
                         <textarea
                           value={editingNoteContent}
                           onChange={(e) => setEditingNoteContent(e.target.value)}
                           disabled={updatingNote}
-                          style={{
-                            padding: '0.5rem',
-                            border: '1px solid #3b82f6',
-                            borderRadius: '0.375rem',
-                            fontSize: '0.875rem',
-                            fontFamily: 'inherit',
-                            resize: 'vertical',
-                            minHeight: '60px',
-                          }}
+                          placeholder="Update note text"
+                          className={styles.noteTextarea}
                         />
-                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                        <div className={styles.noteActions}>
                           <button
                             type="button"
                             onClick={handleEditNoteCancel}
                             disabled={updatingNote}
-                            style={{
-                              padding: '0.25rem 0.75rem',
-                              backgroundColor: '#d1d5db',
-                              color: '#111827',
-                              border: 'none',
-                              borderRadius: '0.25rem',
-                              cursor: 'pointer',
-                              fontSize: '0.75rem',
-                              fontWeight: '500',
-                            }}
+                            className={styles.cancelSmallButton}
                           >
                             Cancel
                           </button>
@@ -417,60 +362,32 @@ export function EditCustomerModal({ customer, isOpen, onClose, onUpdate }: EditC
                             type="button"
                             onClick={handleEditNoteSave}
                             disabled={!editingNoteContent.trim() || updatingNote}
-                            style={{
-                              padding: '0.25rem 0.75rem',
-                              backgroundColor: '#3b82f6',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '0.25rem',
-                              cursor: 'pointer',
-                              fontSize: '0.75rem',
-                              fontWeight: '500',
-                              opacity: (!editingNoteContent.trim() || updatingNote) ? 0.5 : 1,
-                            }}
+                            className={styles.saveSmallButton}
                           >
                             {updatingNote ? 'Saving...' : 'Save'}
                           </button>
                         </div>
                       </div>
                     ) : (
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                        <div style={{ flex: 1 }}>
-                          <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.875rem', color: '#111827' }}>
-                            {note.content}
-                          </p>
-                          <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                      <div className={styles.noteRow}>
+                        <div className={styles.noteBody}>
+                          <p className={styles.noteText}>{note.content}</p>
+                          <div className={styles.noteMeta}>
                             {note.createdByName} • {new Date(note.createdAt).toLocaleDateString()}
                           </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '0.25rem', marginLeft: '0.5rem' }}>
+                        <div className={styles.noteActions}>
                           <button
                             type="button"
                             onClick={() => handleEditNoteStart(note)}
-                            style={{
-                              padding: '0.25rem 0.5rem',
-                              backgroundColor: '#6366f1',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '0.25rem',
-                              cursor: 'pointer',
-                              fontSize: '0.75rem',
-                            }}
+                            className={styles.noteActionButton}
                           >
                             Edit
                           </button>
                           <button
                             type="button"
                             onClick={() => handleDeleteNote(note.id)}
-                            style={{
-                              padding: '0.25rem 0.5rem',
-                              backgroundColor: '#ef4444',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '0.25rem',
-                              cursor: 'pointer',
-                              fontSize: '0.75rem',
-                            }}
+                            className={styles.noteDeleteButton}
                           >
                             Delete
                           </button>
@@ -483,7 +400,7 @@ export function EditCustomerModal({ customer, isOpen, onClose, onUpdate }: EditC
             )}
           </div>
 
-          <div className={styles.modalActions} style={{ marginTop: '2rem' }}>
+          <div className={styles.modalActionsFooter}>
             <button
               type="button"
               onClick={onClose}

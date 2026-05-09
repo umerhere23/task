@@ -1,0 +1,19 @@
+.emptyState {
+  padding: 2rem;
+  color: #475569;
+}
+
+.card {
+  max-width: 44rem;
+  padding: 1.25rem;
+  border: 1px solid #dbe4f0;
+  border-radius: 1.25rem;
+  background: #ffffff;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04);
+}
+
+.description {
+  margin-bottom: 1rem;
+  color: #475569;
+  line-height: 1.65;
+}

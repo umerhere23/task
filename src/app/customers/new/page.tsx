@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { AppShell } from '@/components/layout/AppShell';
 import { CustomerForm } from '@/components/forms/CustomerForm';
 import { useApiClient, useApp } from '@/hooks/useAuth';
+import styles from './page.module.css';
 
 export default function NewCustomerPage() {
   const router = useRouter();
@@ -13,7 +14,7 @@ export default function NewCustomerPage() {
   const [loading, setLoading] = useState(false);
 
   if (!organizationId) {
-    return <div className="p-8 text-slate-600">Please set up your organization first.</div>;
+    return <div className={styles.emptyState}>Please set up your organization first.</div>;
   }
 
   const handleCreate = async (data: { name: string; email: string; phone?: string }) => {
@@ -28,8 +29,8 @@ export default function NewCustomerPage() {
 
   return (
     <AppShell title="New customer" subtitle="Create a simple record and move on.">
-      <div className="max-w-2xl rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
-        <p className="mb-4 text-sm leading-6 text-slate-600">
+      <div className={styles.card}>
+        <p className={styles.description}>
           Add the customer details you need now. You can assign and refine the record later.
         </p>
         <CustomerForm onSubmit={handleCreate} isLoading={loading} />

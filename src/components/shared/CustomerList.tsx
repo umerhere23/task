@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type SVGProps } from 'react';
 import Link from 'next/link';
 import { useApiClient, useApp } from '@/hooks/useAuth';
 import { LoadingSpinner, ErrorAlert, Pagination } from '@/components/ui/UI';
@@ -16,6 +16,63 @@ interface Customer {
   assignedToId: string | null;
   createdAt: string;
   deletedAt?: string | null;
+}
+
+type IconProps = SVGProps<SVGSVGElement>;
+
+function SearchIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}>
+      <circle cx="11" cy="11" r="6.5" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16 16l5 5" />
+    </svg>
+  );
+}
+
+function PlusIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14" />
+    </svg>
+  );
+}
+
+function EyeIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
+      <circle cx="12" cy="12" r="2.5" />
+    </svg>
+  );
+}
+
+function PencilIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </svg>
+  );
+}
+
+function TrashIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 6h18" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M8 6V4.5A1.5 1.5 0 019.5 3h5A1.5 1.5 0 0116 4.5V6" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6.5 6l.8 13a1.5 1.5 0 001.5 1.4h6.4a1.5 1.5 0 001.5-1.4l.8-13" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M10 10.5v6M14 10.5v6" />
+    </svg>
+  );
+}
+
+function RotateIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M20 12a8 8 0 1 1-2.3-5.7" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M20 4v6h-6" />
+    </svg>
+  );
 }
 
 export function CustomerList() {
@@ -36,7 +93,7 @@ export function CustomerList() {
     try {
       setLoading(true);
       setError(null);
-      const result = await api.listCustomers(pageNum, 20, searchTerm, includeDeleted);
+      const result = await api.listCustomers(pageNum, 10, searchTerm, includeDeleted);
       setCustomers(result.data);
       setPages(result.pages);
       setPage(pageNum);
@@ -120,21 +177,23 @@ export function CustomerList() {
   return (
     <div className={styles.container}>
       <div className={styles.searchBar}>
-        <input
-          type="text"
-          placeholder="Search by name or email..."
-          value={search}
-          onChange={(e) => handleSearchChange(e.target.value)}
-          className={styles.searchInput}
-        />
-        <Link
-          href="/customers/new"
-          className={styles.newButton}
-        >
-          New Customer
+        <div className={styles.searchField}>
+          <SearchIcon className={styles.searchIcon} />
+          <input
+            type="text"
+            placeholder="Search by name or email"
+            value={search}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className={styles.searchInput}
+          />
+        </div>
+        <Link href="/customers/new" className={styles.newButton}>
+          <PlusIcon className={styles.buttonIcon} />
+          New customer
         </Link>
         <label className={styles.showDeletedToggle}>
-          <input type="checkbox" checked={showDeleted} onChange={handleToggleDeleted} /> Show deleted
+          <input type="checkbox" checked={showDeleted} onChange={handleToggleDeleted} />
+          <span>Show deleted</span>
         </label>
       </div>
 
@@ -155,21 +214,33 @@ export function CustomerList() {
             {customers.map((customer) => (
               <tr key={customer.id} className={styles.tableBodyRow}>
                 <td data-label="Name" className={`${styles.tableCell} ${styles.tableCellBold}`}>{customer.name}</td>
-                <td data-label="Email" className={styles.tableCell}>{customer.email}</td>
-                <td data-label="Phone" className={styles.tableCell}>{customer.phone || '—'}</td>
-                <td data-label="Assigned To" className={styles.tableCell}>{customer.assignedToName || '—'}</td>
+                <td data-label="Email" className={styles.tableCell} title={customer.email}>{customer.email}</td>
+                <td data-label="Phone" className={styles.tableCell} title={customer.phone || '—'}>{customer.phone || '—'}</td>
+                <td data-label="Assigned To" className={styles.tableCell} title={customer.assignedToName || '—'}>{customer.assignedToName || '—'}</td>
                 <td data-label="Actions" className={styles.tableCell}>
                   {customer.deletedAt ? (
-                    <>
-                      <button onClick={() => void handleRestore(customer.id)} className={styles.actionButton}>Restore</button>
+                    <div className={styles.actionGroup}>
+                      <button type="button" onClick={() => void handleRestore(customer.id)} className={styles.actionButton} title="Restore customer">
+                        <RotateIcon className={styles.actionIcon} />
+                        <span>Restore</span>
+                      </button>
                       <span className={styles.deletedLabel}>Deleted</span>
-                    </>
+                    </div>
                   ) : (
-                    <>
-                      <Link href={`/customers/${customer.id}`} className={styles.actionLink}>View</Link>
-                      <button onClick={() => handleEdit(customer)} className={styles.actionButton}>Edit</button>
-                      <button onClick={() => void handleDelete(customer.id)} className={styles.actionButton}>Delete</button>
-                    </>
+                    <div className={styles.actionGroup}>
+                      <Link href={`/customers/${customer.id}`} className={styles.actionButton} title="View customer">
+                        <EyeIcon className={styles.actionIcon} />
+                        <span>View</span>
+                      </Link>
+                      <button type="button" onClick={() => handleEdit(customer)} className={styles.actionButton} title="Edit customer">
+                        <PencilIcon className={styles.actionIcon} />
+                        <span>Edit</span>
+                      </button>
+                      <button type="button" onClick={() => void handleDelete(customer.id)} className={styles.actionDangerButton} title="Delete customer">
+                        <TrashIcon className={styles.actionIcon} />
+                        <span>Delete</span>
+                      </button>
+                    </div>
                   )}
                 </td>
               </tr>
