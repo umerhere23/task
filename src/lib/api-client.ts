@@ -128,6 +128,10 @@ class ApiClient {
     return this.request<NoteDTO>(`/customers/${customerId}/notes`, 'POST', data);
   }
 
+  async updateNote(noteId: string, data: CreateNoteDTO): Promise<NoteDTO> {
+    return this.request<NoteDTO>(`/notes/${noteId}`, 'PUT', data);
+  }
+
   async deleteNote(noteId: string): Promise<void> {
     return this.request<void>(`/notes/${noteId}`, 'DELETE');
   }

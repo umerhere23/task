@@ -64,5 +64,9 @@ export const ActivityLogEntity = new EntitySchema({
       name: 'IDX_ACTIVITY_LOG_TIMESTAMP',
       columns: ['timestamp'],
     },
+    {
+      name: 'IDX_ACTIVITY_LOG_ORGANIZATION_TIMESTAMP',
+      columns: ['organizationId', 'timestamp'],
+    },
   ],
 });

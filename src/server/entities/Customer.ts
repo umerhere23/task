@@ -16,6 +16,24 @@ export interface CustomerEntity {
 export const CustomerSchema = new EntitySchema<CustomerEntity>({
   name: 'Customer',
   tableName: 'customers',
+  indices: [
+    {
+      name: 'IDX_customers_org_deleted',
+      columns: ['organizationId', 'deletedAt'],
+    },
+    {
+      name: 'IDX_customers_org_name',
+      columns: ['organizationId', 'name'],
+    },
+    {
+      name: 'IDX_customers_org_email',
+      columns: ['organizationId', 'email'],
+    },
+    {
+      name: 'IDX_customers_assigned_deleted',
+      columns: ['assignedToId', 'deletedAt'],
+    },
+  ],
   columns: {
     id: {
       type: String,

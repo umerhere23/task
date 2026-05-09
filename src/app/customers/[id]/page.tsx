@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { AppShell } from '@/components/layout/AppShell';
 import { useApiClient, useApp } from '@/hooks/useAuth';
 import { LoadingSpinner, ErrorAlert } from '@/components/ui/UI';
+import { NotesPanel } from '@/components/modals/NotesPanel';
 import styles from './CustomerDetail.module.css';
 
 interface Customer {
@@ -94,6 +95,7 @@ export default function CustomerDetailPage() {
       subtitle="View and manage customer details and assignments"
     >
       <div className={styles.container}>
+        {/* Customer Information Card */}
         <div className={styles.card}>
           <div className={styles.header}>
             <h2>Customer Information</h2>
@@ -141,6 +143,13 @@ export default function CustomerDetailPage() {
             </div>
           </div>
         </div>
+
+        {/* Notes Panel */}
+        <NotesPanel 
+          customerId={customer.id}
+          customerName={customer.name}
+          onRefresh={() => void loadCustomer()}
+        />
       </div>
     </AppShell>
   );

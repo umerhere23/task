@@ -109,6 +109,49 @@ export class ActivityLogger {
     );
   }
 
+  static async logNoteEdited(
+    noteId: string,
+    customerId: string,
+    performedBy: string,
+    performedByName: string,
+    organizationId: string,
+    previousContent?: string,
+    newContent?: string
+  ) {
+    return logActivityModel(
+      'note',
+      noteId,
+      'edited',
+      performedBy,
+      performedByName,
+      organizationId,
+      { 
+        customerId, 
+        previousContent: previousContent?.substring(0, 100) + '...',
+        newContent: newContent?.substring(0, 100) + '...'
+      }
+    );
+  }
+
+  static async logNoteDeleted(
+    noteId: string,
+    customerId: string,
+    performedBy: string,
+    performedByName: string,
+    organizationId: string,
+    noteContent?: string
+  ) {
+    return logActivityModel(
+      'note',
+      noteId,
+      'deleted',
+      performedBy,
+      performedByName,
+      organizationId,
+      { customerId, content: noteContent?.substring(0, 100) + '...' }
+    );
+  }
+
   static async logUserCreated(
     userId: string,
     performedBy: string,

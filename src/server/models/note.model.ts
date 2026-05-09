@@ -33,6 +33,28 @@ export async function addNoteModel(
   return mapNote(result[0]);
 }
 
+export async function updateNoteModel(
+  noteId: string,
+  organizationId: string,
+  content: string
+): Promise<NoteDTO | null> {
+  const dataSource = await ensureDatabaseInitialized();
+
+  const result = await dataSource.query(
+    `UPDATE notes 
+     SET content = $1, updated_at = NOW()
+     WHERE id = $2 AND organization_id = $3
+     RETURNING id, content, customer_id, organization_id, created_by_user_id, created_by_name, created_at, updated_at`,
+    [content, noteId, organizationId]
+  );
+
+  if (result.length === 0) {
+    return null;
+  }
+
+  return mapNote(result[0]);
+}
+
 export async function getNotesModel(
   customerId: string,
   organizationId: string

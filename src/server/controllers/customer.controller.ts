@@ -116,12 +116,22 @@ export async function createCustomerController(request: NextRequest): Promise<Ne
 
 export async function updateCustomerController(request: NextRequest, { params }: { params: { customerId: string } }): Promise<NextResponse> {
   let organizationId = request.headers.get('x-org-id');
+  let userId = request.headers.get('x-user-id');
+  let userName = request.headers.get('x-user-name');
   const customerId = params.customerId;
 
   // Fallback for development - use first organization if no org-id provided
-  if (!organizationId && process.env.NODE_ENV === 'development') {
-    organizationId = '02c70e6b-ae37-472e-81b9-ea40577ed3f7';
-    console.warn('Using fallback organization ID for development');
+  if (process.env.NODE_ENV === 'development') {
+    if (!organizationId) {
+      organizationId = '02c70e6b-ae37-472e-81b9-ea40577ed3f7';
+      console.warn('Using fallback organization ID for development');
+    }
+    if (!userId) {
+      userId = 'dev-user';
+    }
+    if (!userName) {
+      userName = 'Development User';
+    }
   }
 
   if (!organizationId) {
@@ -150,17 +160,38 @@ export async function updateCustomerController(request: NextRequest, { params }:
     throw new HttpError('Customer not found', 404);
   }
 
+  // Log activity
+  if (userId && userName) {
+    await ActivityLogger.logCustomerUpdated(
+      customerId,
+      userId,
+      userName,
+      organizationId,
+      { name, email, phone }
+    );
+  }
+
   return NextResponse.json(customer, { status: 200 });
 }
 
 export async function deleteCustomerController(request: NextRequest, { params }: { params: { customerId: string } }): Promise<NextResponse> {
   let organizationId = request.headers.get('x-org-id');
+  let userId = request.headers.get('x-user-id');
+  let userName = request.headers.get('x-user-name');
   const customerId = params.customerId;
 
   // Fallback for development - use first organization if no org-id provided
-  if (!organizationId && process.env.NODE_ENV === 'development') {
-    organizationId = '02c70e6b-ae37-472e-81b9-ea40577ed3f7';
-    console.warn('Using fallback organization ID for development');
+  if (process.env.NODE_ENV === 'development') {
+    if (!organizationId) {
+      organizationId = '02c70e6b-ae37-472e-81b9-ea40577ed3f7';
+      console.warn('Using fallback organization ID for development');
+    }
+    if (!userId) {
+      userId = 'dev-user';
+    }
+    if (!userName) {
+      userName = 'Development User';
+    }
   }
 
   if (!organizationId) {
@@ -177,17 +208,37 @@ export async function deleteCustomerController(request: NextRequest, { params }:
     throw new HttpError('Customer not found', 404);
   }
 
+  // Log activity
+  if (userId && userName) {
+    await ActivityLogger.logCustomerDeleted(
+      customerId,
+      userId,
+      userName,
+      organizationId
+    );
+  }
+
   return NextResponse.json(null, { status: 204 });
 }
 
 export async function assignCustomerController(request: NextRequest, { params }: { params: { customerId: string } }): Promise<NextResponse> {
   let organizationId = request.headers.get('x-org-id');
+  let userId = request.headers.get('x-user-id');
+  let userName = request.headers.get('x-user-name');
   const customerId = params.customerId;
 
   // Fallback for development - use first organization if no org-id provided
-  if (!organizationId && process.env.NODE_ENV === 'development') {
-    organizationId = '02c70e6b-ae37-472e-81b9-ea40577ed3f7';
-    console.warn('Using fallback organization ID for development');
+  if (process.env.NODE_ENV === 'development') {
+    if (!organizationId) {
+      organizationId = '02c70e6b-ae37-472e-81b9-ea40577ed3f7';
+      console.warn('Using fallback organization ID for development');
+    }
+    if (!userId) {
+      userId = 'dev-user';
+    }
+    if (!userName) {
+      userName = 'Development User';
+    }
   }
 
   if (!organizationId) {
@@ -217,6 +268,18 @@ export async function assignCustomerController(request: NextRequest, { params }:
       throw new HttpError('Customer or user not found', 404);
     }
 
+    // Log activity
+    if (userId && userName) {
+      await ActivityLogger.logCustomerAssigned(
+        customerId,
+        userId,
+        userName,
+        organizationId,
+        assignedToId,
+        customer.assignedTo?.name
+      );
+    }
+
     return NextResponse.json(customer, { status: 200 });
   } catch (error: unknown) {
     // Handle business rule violations
@@ -234,12 +297,22 @@ export async function assignCustomerController(request: NextRequest, { params }:
 
 export async function restoreCustomerController(request: NextRequest, { params }: { params: { customerId: string } }): Promise<NextResponse> {
   let organizationId = request.headers.get('x-org-id');
+  let userId = request.headers.get('x-user-id');
+  let userName = request.headers.get('x-user-name');
   const customerId = params.customerId;
 
   // Fallback for development - use first organization if no org-id provided
-  if (!organizationId && process.env.NODE_ENV === 'development') {
-    organizationId = '02c70e6b-ae37-472e-81b9-ea40577ed3f7';
-    console.warn('Using fallback organization ID for development');
+  if (process.env.NODE_ENV === 'development') {
+    if (!organizationId) {
+      organizationId = '02c70e6b-ae37-472e-81b9-ea40577ed3f7';
+      console.warn('Using fallback organization ID for development');
+    }
+    if (!userId) {
+      userId = 'dev-user';
+    }
+    if (!userName) {
+      userName = 'Development User';
+    }
   }
 
   if (!organizationId) {
@@ -254,6 +327,16 @@ export async function restoreCustomerController(request: NextRequest, { params }
 
   if (!customer) {
     throw new HttpError('Customer not found', 404);
+  }
+
+  // Log activity
+  if (userId && userName) {
+    await ActivityLogger.logCustomerRestored(
+      customerId,
+      userId,
+      userName,
+      organizationId
+    );
   }
 
   return NextResponse.json(customer, { status: 200 });
