@@ -118,3 +118,16 @@ export async function updateUserModel(
     createdAt: updatedUser.created_at,
   };
 }
+
+export async function deleteUserModel(userId: string, organizationId: string): Promise<boolean> {
+  const dataSource = await ensureDatabaseInitialized();
+
+  const result = await dataSource.query(
+    `DELETE FROM users
+     WHERE id = $1 AND organization_id = $2
+     RETURNING id`,
+    [userId, organizationId]
+  );
+
+  return result.length > 0;
+}

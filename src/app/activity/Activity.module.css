@@ -1,0 +1,174 @@
+.tableShell {
+  overflow: hidden;
+  border: 1px solid #dbe4f0;
+  border-radius: 1.25rem;
+  background: #ffffff;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.06);
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 960px;
+}
+
+.tableHead {
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+.tableHeadCell {
+  padding: 0.9rem 1rem;
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.tableBody {
+  background: #ffffff;
+}
+
+.tableRow {
+  border-top: 1px solid #e2e8f0;
+  transition: background-color 0.2s ease;
+}
+
+.tableRow:hover {
+  background: #f8fafc;
+}
+
+.tableCell {
+  padding: 1rem;
+  vertical-align: middle;
+  color: #334155;
+  font-size: 0.95rem;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.38rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.badgeSuccess {
+  background: #ecfdf5;
+  color: #047857;
+  box-shadow: inset 0 0 0 1px #a7f3d0;
+}
+
+.badgeInfo {
+  background: #eff6ff;
+  color: #1d4ed8;
+  box-shadow: inset 0 0 0 1px #bfdbfe;
+}
+
+.badgeDanger {
+  background: #fff1f2;
+  color: #be123c;
+  box-shadow: inset 0 0 0 1px #fecdd3;
+}
+
+.badgePurple {
+  background: #f5f3ff;
+  color: #7c3aed;
+  box-shadow: inset 0 0 0 1px #ddd6fe;
+}
+
+.badgeWarning {
+  background: #fffbeb;
+  color: #b45309;
+  box-shadow: inset 0 0 0 1px #fde68a;
+}
+
+.badgeIndigo {
+  background: #eef2ff;
+  color: #4338ca;
+  box-shadow: inset 0 0 0 1px #c7d2fe;
+}
+
+.badgeCyan {
+  background: #ecfeff;
+  color: #0e7490;
+  box-shadow: inset 0 0 0 1px #a5f3fc;
+}
+
+.badgeNeutral {
+  background: #f8fafc;
+  color: #475569;
+  box-shadow: inset 0 0 0 1px #e2e8f0;
+}
+
+.primaryText {
+  max-width: 13rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.secondaryText {
+  margin-top: 0.25rem;
+  max-width: 13rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.truncatedText,
+.detailsText,
+.timeText {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detailsText {
+  max-width: 28rem;
+  color: #475569;
+}
+
+.timeText {
+  white-space: nowrap;
+  color: #475569;
+}
+
+.emptyState {
+  margin-top: 1rem;
+  padding: 2rem 1rem;
+  border: 1px solid #dbe4f0;
+  border-radius: 1.25rem;
+  background: #ffffff;
+  text-align: center;
+  color: #64748b;
+}
+
+.paginationShell {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid #dbe4f0;
+  border-radius: 1.25rem;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+}
+
+@media (max-width: 960px) {
+  .table {
+    min-width: 820px;
+  }
+}

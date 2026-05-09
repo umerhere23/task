@@ -20,46 +20,43 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <nav className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-blue-600">CRM System</h1>
-          <button
-            onClick={() => clearAuth()}
-            className="px-4 py-2 text-red-600 hover:bg-red-50 rounded"
-          >
-            Logout
-          </button>
-        </div>
-      </nav>
+    <main className="min-h-screen bg-[#f6f7fb] px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-5xl items-center">
+        <section className="w-full rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+          <div className="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Workspace</p>
+              <h1 className="mt-2 text-2xl font-semibold text-slate-900">CRM system</h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+                Open the part of the workspace you need. The layout stays simple, with the important actions up front.
+              </p>
+            </div>
+            <button
+              onClick={() => clearAuth()}
+              className="inline-flex items-center justify-center rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
+            >
+              Logout
+            </button>
+          </div>
 
-      <main className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <Link
-            href="/customers"
-            className="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition"
-          >
-            <h2 className="text-xl font-bold mb-2 text-gray-900">Customers</h2>
-            <p className="text-gray-600">Manage customer relationships</p>
-          </Link>
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            <Link href="/customers" className="rounded-2xl border border-slate-200 p-5 transition hover:border-slate-300 hover:bg-slate-50">
+              <h2 className="text-base font-semibold text-slate-900">Customers</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">Manage customer relationships.</p>
+            </Link>
 
-          <Link
-            href="/users"
-            className="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition"
-          >
-            <h2 className="text-xl font-bold mb-2 text-gray-900">Team</h2>
-            <p className="text-gray-600">Manage team members</p>
-          </Link>
+            <Link href="/users" className="rounded-2xl border border-slate-200 p-5 transition hover:border-slate-300 hover:bg-slate-50">
+              <h2 className="text-base font-semibold text-slate-900">Team</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">Manage team members and roles.</p>
+            </Link>
 
-          <Link
-            href="/activity"
-            className="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition"
-          >
-            <h2 className="text-xl font-bold mb-2 text-gray-900">Activity</h2>
-            <p className="text-gray-600">View system activity logs</p>
-          </Link>
-        </div>
-      </main>
-    </div>
+            <Link href="/activity" className="rounded-2xl border border-slate-200 p-5 transition hover:border-slate-300 hover:bg-slate-50">
+              <h2 className="text-base font-semibold text-slate-900">Activity</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">Review recent workspace activity.</p>
+            </Link>
+          </div>
+        </section>
+      </div>
+    </main>
   );
 }

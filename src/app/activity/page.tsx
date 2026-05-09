@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useApiClient, useApp } from '@/hooks/useAuth';
 import { LoadingSpinner, ErrorAlert, Pagination } from '@/components/ui/UI';
 import { AppShell } from '@/components/layout/AppShell';
+import styles from './Activity.module.css';
 
 interface ActivityLog {
   id: string;
@@ -17,16 +18,40 @@ interface ActivityLog {
   timestamp: string;
 }
 
-const ACTION_LABELS: Record<string, { label: string; color: string }> = {
-  customer_created: { label: 'Customer Created', color: 'bg-green-100 text-green-800' },
-  customer_updated: { label: 'Customer Updated', color: 'bg-blue-100 text-blue-800' },
-  customer_deleted: { label: 'Customer Deleted', color: 'bg-red-100 text-red-800' },
-  customer_restored: { label: 'Customer Restored', color: 'bg-purple-100 text-purple-800' },
-  customer_assigned: { label: 'Customer Assigned', color: 'bg-orange-100 text-orange-800' },
-  note_added: { label: 'Note Added', color: 'bg-indigo-100 text-indigo-800' },
-  note_edited: { label: 'Note Edited', color: 'bg-indigo-100 text-indigo-800' },
-  note_deleted: { label: 'Note Deleted', color: 'bg-red-100 text-red-800' },
+const ACTION_LABELS: Record<string, { label: string; variant: string }> = {
+  customer_created: { label: 'Customer Created', variant: styles.badgeSuccess },
+  customer_updated: { label: 'Customer Updated', variant: styles.badgeInfo },
+  customer_deleted: { label: 'Customer Deleted', variant: styles.badgeDanger },
+  customer_restored: { label: 'Customer Restored', variant: styles.badgePurple },
+  customer_assigned: { label: 'Customer Assigned', variant: styles.badgeWarning },
+  note_added: { label: 'Note Added', variant: styles.badgeIndigo },
+  note_edited: { label: 'Note Edited', variant: styles.badgeCyan },
+  note_deleted: { label: 'Note Deleted', variant: styles.badgeDanger },
 };
+
+function getActionLabel(action: string) {
+  return ACTION_LABELS[action] || { label: action.replaceAll('_', ' '), variant: styles.badgeNeutral };
+}
+
+function getMetadataPreview(metadata?: Record<string, any>) {
+  if (!metadata) {
+    return { summary: 'No additional details', full: 'No additional details' };
+  }
+
+  const entries = Object.entries(metadata);
+  const preview = entries
+    .slice(0, 2)
+    .map(([key, value]) => `${key}: ${typeof value === 'string' ? value : JSON.stringify(value)}`)
+    .join(' • ');
+
+  const remaining = entries.length - 2;
+  const summary = remaining > 0 ? `${preview} • +${remaining} more` : preview;
+
+  return {
+    summary: summary || 'Details available',
+    full: JSON.stringify(metadata, null, 2),
+  };
+}
 
 export default function ActivityPage() {
   const { organizationId } = useApp();
@@ -41,7 +66,7 @@ export default function ActivityPage() {
     try {
       setLoading(true);
       setError(null);
-      const result = await api.getActivityLogs({ page: pageNum, limit: 20 });
+      const result = await api.getActivityLogs({ page: pageNum, limit: 10 });
       setLogs(result.data);
       setPages(result.pages);
       setPage(pageNum);
@@ -65,66 +90,73 @@ export default function ActivityPage() {
   }
 
   return (
-    <AppShell title="Activity log" subtitle="Track customer, note, and assignment changes.">
+    <AppShell title="Activity log" subtitle="Track customer, note, and assignment changes in a polished table.">
       {error && <ErrorAlert message={error} />}
 
-      <div className="bg-white rounded-lg border overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b">
+      <div className={styles.tableShell}>
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
+            <thead className={styles.tableHead}>
               <tr>
-                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Action</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Entity</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Performed By</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Changes</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Time</th>
+                <th className={styles.tableHeadCell}>Action</th>
+                <th className={styles.tableHeadCell}>Entity</th>
+                <th className={styles.tableHeadCell}>Performed by</th>
+                <th className={styles.tableHeadCell}>Details</th>
+                <th className={styles.tableHeadCell}>Time</th>
               </tr>
             </thead>
-            <tbody>
-              {logs.map((log) => (
-                <tr key={log.id} className="border-b hover:bg-gray-50">
-                  <td className="px-6 py-3 text-sm font-medium">
-                    {(() => {
-                      const actionInfo = ACTION_LABELS[log.action];
-                      return (
-                        <span className={`px-3 py-1 rounded text-xs font-semibold ${actionInfo?.color || 'bg-gray-100 text-gray-800'}`}>
-                          {actionInfo?.label || log.action}
-                        </span>
-                      );
-                    })()}
-                  </td>
-                  <td className="px-6 py-3 text-sm text-gray-600">
-                    {log.entityType} ({log.entityId.substring(0, 8)}...)
-                  </td>
-                  <td className="px-6 py-3 text-sm text-gray-600">{log.performedByName}</td>
-                  <td className="px-6 py-3 text-sm">
-                    {log.metadata ? (
-                      <div className="space-y-1">
-                        {Object.entries(log.metadata).map(([key, value]) => (
-                          <div key={key} className="text-xs">
-                            <span className="font-medium">{key}:</span> {JSON.stringify(value)}
-                          </div>
-                        ))}
+            <tbody className={styles.tableBody}>
+              {logs.map((log) => {
+                const actionInfo = getActionLabel(log.action);
+                const metadataPreview = getMetadataPreview(log.metadata);
+
+                return (
+                  <tr key={log.id} className={styles.tableRow}>
+                    <td className={styles.tableCell} data-label="Action">
+                      <span className={`${styles.badge} ${actionInfo.variant}`}>
+                        {actionInfo.label}
+                      </span>
+                    </td>
+                    <td className={styles.tableCell} data-label="Entity">
+                      <div className={styles.primaryText} title={log.entityType}>
+                        {log.entityType}
                       </div>
-                    ) : (
-                      '—'
-                    )}
-                  </td>
-                  <td className="px-6 py-3 text-sm text-gray-600">
-                    {new Date(log.timestamp).toLocaleString()}
-                  </td>
-                </tr>
-              ))}
+                      <div className={styles.secondaryText} title={log.entityId}>
+                        {log.entityId.substring(0, 8)}...
+                      </div>
+                    </td>
+                    <td className={styles.tableCell} data-label="Performed by">
+                      <span className={styles.truncatedText} title={log.performedByName}>
+                        {log.performedByName}
+                      </span>
+                    </td>
+                    <td className={styles.tableCell} data-label="Details">
+                      <span className={styles.detailsText} title={metadataPreview.full}>
+                        {metadataPreview.summary}
+                      </span>
+                    </td>
+                    <td className={styles.tableCell} data-label="Time">
+                      <span className={styles.timeText} title={new Date(log.timestamp).toLocaleString()}>
+                        {new Date(log.timestamp).toLocaleString()}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
       </div>
 
       {logs.length === 0 && (
-        <div className="text-center py-8 text-gray-500">No activity yet</div>
+        <div className={styles.emptyState}>No activity yet</div>
       )}
 
-      {pages > 1 && <Pagination page={page} pages={pages} onPageChange={loadLogs} />}
+      {pages > 1 && (
+        <div className={styles.paginationShell}>
+          <Pagination page={page} pages={pages} onPageChange={loadLogs} />
+        </div>
+      )}
     </AppShell>
   );
 }

@@ -13,53 +13,82 @@ interface User {
 
 interface EditUserModalProps {
   user: User | null;
+  mode: 'create' | 'edit';
   isOpen: boolean;
   onClose: () => void;
   onUpdate: () => void;
 }
 
-export function EditUserModal({ user, isOpen, onClose, onUpdate }: EditUserModalProps) {
+export function EditUserModal({ user, mode, isOpen, onClose, onUpdate }: EditUserModalProps) {
   const api = useApiClient();
-  const [formData, setFormData] = useState({ name: '', email: '', role: 'member' as 'admin' | 'member' });
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: 'member' as 'admin' | 'member',
+  });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isCreateMode = mode === 'create';
 
   useEffect(() => {
-    if (user) {
+    if (user && !isCreateMode) {
       setFormData({
         name: user.name,
         email: user.email,
+        password: '',
         role: user.role as 'admin' | 'member',
+      });
+    } else {
+      setFormData({
+        name: '',
+        email: '',
+        password: '',
+        role: 'member',
       });
     }
     setError(null);
-  }, [user]);
+  }, [isCreateMode, user, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
 
     setSubmitting(true);
     setError(null);
 
     try {
-      await api.updateUser(user.id, formData);
+      if (isCreateMode) {
+        await api.createUser({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          role: formData.role,
+        });
+      } else {
+        if (!user) return;
+        await api.updateUser(user.id, {
+          name: formData.name,
+          email: formData.email,
+          role: formData.role,
+        });
+      }
+
       onUpdate();
       onClose();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to update user');
+      setError(err instanceof Error ? err.message : isCreateMode ? 'Failed to create user' : 'Failed to update user');
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (!isOpen || !user) return null;
+  if (!isOpen) return null;
 
   return (
     <div className={styles.modalOverlay}>
       <div className={styles.modal}>
         <div className={styles.modalHeader}>
-          <h2>Edit User</h2>
+          <h2>{isCreateMode ? 'Add User' : 'Edit User'}</h2>
           <button onClick={onClose} className={styles.closeButton}>&times;</button>
         </div>
 
@@ -102,6 +131,20 @@ export function EditUserModal({ user, isOpen, onClose, onUpdate }: EditUserModal
             </select>
           </div>
 
+          {isCreateMode && (
+            <div className={styles.field}>
+              <label htmlFor="password">Password</label>
+              <input
+                id="password"
+                type="password"
+                required
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                placeholder="Set an initial password"
+              />
+            </div>
+          )}
+
           <div className={styles.modalActions}>
             <button
               type="button"
@@ -116,7 +159,7 @@ export function EditUserModal({ user, isOpen, onClose, onUpdate }: EditUserModal
               className={styles.submitButton}
               disabled={submitting}
             >
-              {submitting ? 'Updating...' : 'Update User'}
+              {submitting ? (isCreateMode ? 'Creating...' : 'Updating...') : (isCreateMode ? 'Create User' : 'Update User')}
             </button>
           </div>
         </form>

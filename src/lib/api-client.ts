@@ -119,6 +119,10 @@ class ApiClient {
     return this.request<UserDTO>(`/users/${id}`, 'PUT', data);
   }
 
+  async deleteUser(id: string) {
+    return this.request<void>(`/users/${id}`, 'DELETE');
+  }
+
   // Notes API
   async getNotes(customerId: string): Promise<NoteDTO[]> {
     return this.request<NoteDTO[]>(`/customers/${customerId}/notes`, 'GET');

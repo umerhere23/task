@@ -135,101 +135,109 @@ export default function DashboardPage() {
     { href: '/activity', title: 'Activity', description: 'Track customer, note, and assignment changes.', icon: ActivityIcon },
   ];
 
+  const statusItems = [
+    { label: 'Connection', value: status?.connected ? 'Connected' : 'Unknown' },
+    { label: 'Sync', value: status?.synchronizeEnabled ? 'On' : 'Off' },
+    { label: 'Database', value: status?.database || 'Unknown' },
+  ];
+
+  const getStatusTone = (label: string) => {
+    if (label === 'Connection') {
+      return status?.connected ? styles.good : styles.bad;
+    }
+
+    if (label === 'Sync') {
+      return status?.synchronizeEnabled ? styles.good : styles.bad;
+    }
+
+    return styles.statusValue;
+  };
+
   return (
     <AppShell
       title="Overview"
-      subtitle="A standard admin dashboard for your organization, with a consistent sidebar on every protected page."
-      actions={<button type="button" onClick={() => void loadStatus()} className={styles.primaryLink}>Refresh DB Status</button>}
+      subtitle="A concise snapshot of your workspace, with the essentials up front."
+      actions={<button type="button" onClick={() => void loadStatus()} className={styles.primaryButton}>Refresh</button>}
     >
-      <section className={styles.metricGrid}>
+      <section className={styles.summaryGrid}>
         {metrics.map((metric) => {
           const MetricIcon = metric.icon;
 
           return (
-            <article key={metric.label} className={styles.metricCard}>
-              <div className={styles.metricIconWrap}><MetricIcon className={styles.metricIcon} /></div>
-              <div>
-                <p className={styles.metricLabel}>{metric.label}</p>
-                <p className={styles.metricValue}>{metric.value}</p>
+            <article key={metric.label} className={styles.summaryCard}>
+              <div className={styles.summaryHeader}>
+                <MetricIcon className={styles.summaryIcon} />
+                <p className={styles.summaryLabel}>{metric.label}</p>
               </div>
-              <p className={styles.metricDetail}>{metric.detail}</p>
+              <p className={styles.summaryValue}>{metric.value}</p>
+              <p className={styles.summaryDetail}>{metric.detail}</p>
             </article>
           );
         })}
       </section>
 
-      <section className={styles.contentGrid}>
-        <div className={styles.panel}>
-          <div className={styles.panelHeader}>
-            <div>
-              <p className={styles.panelEyebrow}>Quick actions</p>
-              <h2 className={styles.panelTitle}>Workspace shortcuts</h2>
-            </div>
-            <span className={styles.statusPill}>Ready</span>
+      <section className={styles.panel}>
+        <div className={styles.panelHeader}>
+          <div>
+            <p className={styles.panelEyebrow}>Quick actions</p>
+            <h2 className={styles.panelTitle}>Open workspace</h2>
           </div>
-
-          <div className={styles.shortcutGrid}>
-            {shortcuts.map((item) => {
-              const ShortcutIcon = item.icon;
-
-              return (
-                <Link key={item.href} href={item.href} className={styles.shortcutCard}>
-                  <span className={styles.shortcutIconWrap}><ShortcutIcon className={styles.shortcutIcon} /></span>
-                  <h3 className={styles.shortcutTitle}>{item.title}</h3>
-                  <p className={styles.shortcutText}>{item.description}</p>
-                </Link>
-              );
-            })}
-          </div>
-
-          <div className={styles.noticeBox}>
-            <div className={styles.noticeTitleRow}>
-              <DatabaseIcon className={styles.noticeIcon} />
-              <p className={styles.noticeTitle}>Organization context</p>
-            </div>
-            <p className={styles.noticeText}>
-              You are viewing data scoped to {organization?.name || 'your organization'}. The layout uses a standard enterprise pattern with a persistent sidebar and top navigation.
-            </p>
-          </div>
+          <span className={styles.statusPill}>Ready</span>
         </div>
 
-        <aside className={styles.sideColumn}>
-          <section className={styles.panel}>
-            <div className={styles.panelHeader}>
-              <div>
-                <p className={styles.panelEyebrow}>System status</p>
-                <h2 className={styles.panelTitle}>Database health</h2>
+        <div className={styles.actionList}>
+          {shortcuts.map((item) => {
+            const ShortcutIcon = item.icon;
+
+            return (
+              <Link key={item.href} href={item.href} className={styles.actionRow}>
+                <span className={styles.actionIconWrap}><ShortcutIcon className={styles.actionIcon} /></span>
+                <span className={styles.actionTextBlock}>
+                  <span className={styles.actionTitle}>{item.title}</span>
+                  <span className={styles.actionText}>{item.description}</span>
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className={styles.detailGrid}>
+        <section className={styles.panelCompact}>
+          <div className={styles.panelHeaderCompact}>
+            <div>
+              <p className={styles.panelEyebrow}>System</p>
+              <h2 className={styles.panelTitle}>Database status</h2>
+            </div>
+            <button type="button" onClick={() => void loadStatus()} className={styles.secondaryButton}>Refresh</button>
+          </div>
+
+          <div className={styles.statusStack}>
+            {loading && <div className={styles.messageBox}>Checking database connection...</div>}
+            {!loading && error && <div className={styles.errorBox}>{error}</div>}
+            {!loading && status && (
+              <div className={styles.statusCard}>
+                {statusItems.map((item) => (
+                  <div key={item.label} className={styles.statusRow}>
+                    <span>{item.label}</span>
+                    <strong className={getStatusTone(item.label)}>{item.value}</strong>
+                  </div>
+                ))}
+                <p className={styles.statusMessage}>{status.message}</p>
               </div>
-              <button type="button" onClick={() => void loadStatus()} className={styles.secondaryButton}>Refresh</button>
-            </div>
+            )}
+          </div>
+        </section>
 
-            <div className={styles.statusStack}>
-              {loading && <div className={styles.messageBox}>Checking database connection...</div>}
-              {!loading && error && <div className={styles.errorBox}>{error}</div>}
-              {!loading && status && (
-                <div className={styles.statusCard}>
-                  <div className={styles.statusRow}><span>Connected</span><strong className={status.connected ? styles.good : styles.bad}>{status.connected ? 'Yes' : 'No'}</strong></div>
-                  <div className={styles.statusRow}><span>Sync</span><strong>{status.synchronizeEnabled ? 'Enabled' : 'Disabled'}</strong></div>
-                  <div className={styles.statusRow}><span>Database</span><strong>{status.database || 'unknown'}</strong></div>
-                  <p className={styles.statusMessage}>{status.message}</p>
-                </div>
-              )}
-            </div>
-          </section>
-
-          <section className={styles.panelAlt}>
-            <div className={styles.panelHeaderCompact}>
-              <p className={styles.panelEyebrow}>Session</p>
-              <UsersIcon className={styles.panelMiniIcon} />
-            </div>
-            <h2 className={styles.panelTitle}>Signed in as</h2>
-            <div className={styles.sessionCard}>
-              <p className={styles.sessionName}>{session?.name || 'User'}</p>
-              <p className={styles.sessionMeta}>{organization?.name || 'Organization'}</p>
-              <p className={styles.sessionMeta}>Role: {session?.role || 'member'}</p>
-            </div>
-          </section>
-        </aside>
+        <section className={styles.panelCompact}>
+          <p className={styles.panelEyebrow}>Session</p>
+          <h2 className={styles.panelTitle}>Signed in</h2>
+          <div className={styles.sessionCard}>
+            <p className={styles.sessionName}>{session?.name || 'User'}</p>
+            <p className={styles.sessionMeta}>{organization?.name || 'Organization'}</p>
+            <p className={styles.sessionMeta}>Role: {session?.role || 'member'}</p>
+          </div>
+        </section>
       </section>
     </AppShell>
   );

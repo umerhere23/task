@@ -154,11 +154,11 @@ export function CustomerList() {
           <tbody className={styles.tableBody}>
             {customers.map((customer) => (
               <tr key={customer.id} className={styles.tableBodyRow}>
-                <td className={`${styles.tableCell} ${styles.tableCellBold}`}>{customer.name}</td>
-                <td className={styles.tableCell}>{customer.email}</td>
-                <td className={styles.tableCell}>{customer.phone || '—'}</td>
-                <td className={styles.tableCell}>{customer.assignedToName || '—'}</td>
-                <td className={styles.tableCell}>
+                <td data-label="Name" className={`${styles.tableCell} ${styles.tableCellBold}`}>{customer.name}</td>
+                <td data-label="Email" className={styles.tableCell}>{customer.email}</td>
+                <td data-label="Phone" className={styles.tableCell}>{customer.phone || '—'}</td>
+                <td data-label="Assigned To" className={styles.tableCell}>{customer.assignedToName || '—'}</td>
+                <td data-label="Actions" className={styles.tableCell}>
                   {customer.deletedAt ? (
                     <>
                       <button onClick={() => void handleRestore(customer.id)} className={styles.actionButton}>Restore</button>
