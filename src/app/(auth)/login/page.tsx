@@ -1,25 +1,26 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { OrganizationLoginForm } from '@/components/forms/OrganizationLoginForm';
 
 export default function LoginPage() {
   const router = useRouter();
   const [showForgotPassword, setShowForgotPassword] = useState(false);
 
+  useEffect(() => {
+    if (showForgotPassword) {
+      router.push('/forgot-password');
+    }
+  }, [router, showForgotPassword]);
+
   const handleLoginSuccess = (data: any) => {
     // Redirect to dashboard or main app page
     router.push('/dashboard');
   };
 
-  if (showForgotPassword) {
-    router.push('/forgot-password');
-    return null;
-  }
-
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+    <main className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 to-indigo-100 p-6">
       <div className="w-full max-w-md">
         <div className="rounded-lg border bg-white p-8 shadow-lg">
           <div className="mb-6">

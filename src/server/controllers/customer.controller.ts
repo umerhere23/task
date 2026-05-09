@@ -218,7 +218,7 @@ export async function deleteCustomerController(request: NextRequest, { params }:
     );
   }
 
-  return NextResponse.json(null, { status: 204 });
+  return NextResponse.json({}, { status: 200 });
 }
 
 export async function assignCustomerController(request: NextRequest, { params }: { params: { customerId: string } }): Promise<NextResponse> {
