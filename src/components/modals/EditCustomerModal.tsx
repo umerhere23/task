@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useApiClient } from '@/hooks/useAuth';
+import { useGlobalToast } from '@/hooks/useGlobalToast';
 import { LoadingSpinner } from '@/components/ui/UI';
 import styles from './EditCustomerModal.module.css';
 
@@ -37,6 +38,7 @@ interface EditCustomerModalProps {
 
 export function EditCustomerModal({ customer, isOpen, onClose, onUpdate }: EditCustomerModalProps) {
   const api = useApiClient();
+  const { addToast } = useGlobalToast();
   const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [newNote, setNewNote] = useState('');
@@ -104,10 +106,13 @@ export function EditCustomerModal({ customer, isOpen, onClose, onUpdate }: EditC
         email: formData.email,
         phone: formData.phone || undefined,
       });
+      addToast('success', 'Customer updated successfully');
       onUpdate();
       onClose();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to update customer');
+      const message = err instanceof Error ? err.message : 'Failed to update customer';
+      setError(message);
+      addToast('error', message);
     } finally {
       setSubmitting(false);
     }
@@ -120,11 +125,14 @@ export function EditCustomerModal({ customer, isOpen, onClose, onUpdate }: EditC
     setError(null);
 
     try {
+      const assignedUser = users.find(u => u.id === selectedUserId);
       await api.assignCustomer(customer.id, selectedUserId);
+      addToast('success', `Customer assigned to ${assignedUser?.name || 'user'}`);
       onUpdate();
-      // Don't close modal, let user see confirmation and continue
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to assign customer');
+      const message = err instanceof Error ? err.message : 'Failed to assign customer';
+      setError(message);
+      addToast('error', message);
     } finally {
       setAssigningUser(false);
     }
@@ -138,10 +146,13 @@ export function EditCustomerModal({ customer, isOpen, onClose, onUpdate }: EditC
 
     try {
       await api.addNote(customer.id, { content: newNote });
+      addToast('success', 'Note added successfully');
       setNewNote('');
       await fetchNotes();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to add note');
+      const message = err instanceof Error ? err.message : 'Failed to add note';
+      setError(message);
+      addToast('error', message);
     } finally {
       setAddingNote(false);
     }
@@ -151,9 +162,12 @@ export function EditCustomerModal({ customer, isOpen, onClose, onUpdate }: EditC
     setError(null);
     try {
       await api.deleteNote(noteId);
+      addToast('success', 'Note deleted successfully');
       await fetchNotes();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to delete note');
+      const message = err instanceof Error ? err.message : 'Failed to delete note';
+      setError(message);
+      addToast('error', message);
     }
   };
 
@@ -175,11 +189,14 @@ export function EditCustomerModal({ customer, isOpen, onClose, onUpdate }: EditC
 
     try {
       await api.updateNote(editingNoteId, { content: editingNoteContent.trim() });
+      addToast('success', 'Note updated successfully');
       setEditingNoteId(null);
       setEditingNoteContent('');
       await fetchNotes();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to update note');
+      const message = err instanceof Error ? err.message : 'Failed to update note';
+      setError(message);
+      addToast('error', message);
     } finally {
       setUpdatingNote(false);
     }

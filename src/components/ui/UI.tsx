@@ -1,6 +1,7 @@
 'use client';
 
 import styles from './UI.module.css';
+export * from './Toast';
 
 export function LoadingSpinner() {
   return (

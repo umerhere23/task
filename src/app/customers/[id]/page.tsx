@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { AppShell } from '@/components/layout/AppShell';
 import { useApiClient, useApp } from '@/hooks/useAuth';
+import { useGlobalToast } from '@/hooks/useGlobalToast';
 import { LoadingSpinner, ErrorAlert } from '@/components/ui/UI';
 import { NotesPanel } from '@/components/modals/NotesPanel';
 import styles from './CustomerDetail.module.css';
@@ -31,6 +32,7 @@ interface User {
 export default function CustomerDetailPage() {
   const { organizationId } = useApp();
   const api = useApiClient();
+  const { addToast } = useGlobalToast();
   const params = useParams();
   const customerId = params.id as string;
 
@@ -77,9 +79,13 @@ export default function CustomerDetailPage() {
 
     try {
       const updated = await api.assignCustomer(customer.id, assignedToId);
+      const assignedUser = users.find(u => u.id === assignedToId);
       setCustomer(updated);
+      addToast('success', `Customer assigned to ${assignedUser?.name || 'user'} successfully`);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to assign customer');
+      const message = err instanceof Error ? err.message : 'Failed to assign customer';
+      setError(message);
+      addToast('error', message);
     } finally {
       setAssigning(false);
     }

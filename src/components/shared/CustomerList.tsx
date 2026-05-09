@@ -84,21 +84,27 @@ export function CustomerList() {
 
   const handleDelete = async (id: string) => {
     try {
+      setLoading(true);
       await api.deleteCustomer(id);
       void loadCustomers(page, search, showDeleted);
     } catch (err: unknown) {
       if (err instanceof Error) setError(err.message);
       else setError('Failed to delete customer');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleRestore = async (id: string) => {
     try {
+      setLoading(true);
       await api.restoreCustomer(id);
       void loadCustomers(page, search, showDeleted);
     } catch (err: unknown) {
       if (err instanceof Error) setError(err.message);
       else setError('Failed to restore customer');
+    } finally {
+      setLoading(false);
     }
   };
 
