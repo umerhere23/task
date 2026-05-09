@@ -87,3 +87,34 @@ export async function createUserModel(organizationId: string, input: CreateUserD
 
   return mapUser(saved);
 }
+
+export async function updateUserModel(
+  userId: string,
+  organizationId: string,
+  input: { name: string; email: string; role: string }
+): Promise<UserDTO> {
+  const dataSource = await ensureDatabaseInitialized();
+  
+  // Use raw SQL to update user
+  const result = await dataSource.query(
+    `UPDATE users 
+     SET name = $1, email = $2, role = $3 
+     WHERE id = $4 AND organization_id = $5 
+     RETURNING id, name, email, role, organization_id, created_at`,
+    [input.name, input.email, input.role, userId, organizationId]
+  );
+
+  if (result.length === 0) {
+    throw new Error('User not found or not in organization');
+  }
+
+  const updatedUser = result[0];
+  return {
+    id: updatedUser.id,
+    name: updatedUser.name,
+    email: updatedUser.email,
+    role: updatedUser.role,
+    organizationId: updatedUser.organization_id,
+    createdAt: updatedUser.created_at,
+  };
+}

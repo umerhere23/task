@@ -1,7 +1,15 @@
 import { withErrorHandling } from '@/server/middleware/http.middleware';
-import { createUserController, listUsersController } from '@/server/controllers/user.controller';
+import { NextRequest } from 'next/server';
+import { createUserController, listUsersController, updateUserController } from '@/server/controllers/user.controller';
 
 export const userRoutes = {
   GET: withErrorHandling(listUsersController),
   POST: withErrorHandling(createUserController),
+};
+
+export const userDetailRoutes = {
+  PUT: withErrorHandling(async (req: NextRequest) => {
+    const userId = req.nextUrl.pathname.split('/')[3];
+    return updateUserController(req, { params: { userId } });
+  }),
 };

@@ -53,33 +53,60 @@ export async function listCustomersModel(
   includeDeleted: boolean = false
 ): Promise<{ data: CustomerListDTO[]; total: number; pages: number }> {
   const dataSource = await ensureDatabaseInitialized();
-  const repo = dataSource.getRepository<CustomerEntity>('Customer');
 
-  const query = repo
-    .createQueryBuilder('customer')
-    .leftJoinAndSelect('customer.assignedTo', 'assignedTo')
-    .where('customer.organization_id = :organizationId', { organizationId });
+  // Build WHERE conditions
+  const conditions: string[] = ['c.organization_id = $1'];
+  const params: any[] = [organizationId];
+  let paramIndex = 2;
 
   if (!includeDeleted) {
-    query.andWhere('customer.deleted_at IS NULL');
+    conditions.push(`c.deleted_at IS NULL`);
   }
 
   if (search) {
-    query.andWhere(
-      'LOWER(customer.name) ILIKE LOWER(:search) OR LOWER(customer.email) ILIKE LOWER(:search)',
-      { search: `%${search}%` }
-    );
+    conditions.push(`(LOWER(c.name) ILIKE LOWER($${paramIndex}) OR LOWER(c.email) ILIKE LOWER($${paramIndex}))`);
+    params.push(`%${search}%`);
+    paramIndex++;
   }
 
-  const total = await query.getCount();
-  const skip = (page - 1) * limit;
+  const whereClause = conditions.join(' AND ');
 
-  const rows = await query.skip(skip).take(limit).orderBy('customer.created_at', 'DESC').getMany();
+  // Get total count
+  const countResult = await dataSource.query(
+    `SELECT COUNT(*) as total FROM customers c WHERE ${whereClause}`,
+    params
+  );
+  const total = parseInt(countResult[0].total, 10);
+
+  // Get paginated results
+  const offset = (page - 1) * limit;
+  const result = await dataSource.query(
+    `SELECT 
+      c.id, c.name, c.email, c.phone, c.assigned_to_id, c.created_at, c.deleted_at,
+      u.name as assigned_to_name
+     FROM customers c
+     LEFT JOIN users u ON c.assigned_to_id = u.id
+     WHERE ${whereClause}
+     ORDER BY c.created_at DESC
+     LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`,
+    [...params, limit, offset]
+  );
+
+  const customers: CustomerListDTO[] = result.map((row: any) => ({
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    phone: row.phone,
+    assignedToId: row.assigned_to_id,
+    assignedToName: row.assigned_to_name,
+    createdAt: row.created_at,
+    deletedAt: row.deleted_at,
+  }));
 
   const pages = Math.ceil(total / limit);
 
   return {
-    data: rows.map(mapCustomerList),
+    data: customers,
     total,
     pages,
   };
@@ -199,39 +226,90 @@ export async function assignCustomerModel(
   assignedToId: string
 ): Promise<CustomerDTO | null> {
   const dataSource = await ensureDatabaseInitialized();
-  const customerRepo = dataSource.getRepository<CustomerEntity>('Customer');
-  const userRepo = dataSource.getRepository<UserEntity>('User');
 
-  const customer = await customerRepo
-    .createQueryBuilder('customer')
-    .where('customer.id = :id', { id: customerId })
-    .andWhere('customer.organization_id = :organizationId', { organizationId })
-    .andWhere('customer.deleted_at IS NULL')
-    .getOne();
+  // Use raw SQL with transaction and row-level locking
+  const result = await dataSource.transaction(async (manager) => {
+    // Lock the customer row to prevent concurrent assignments
+    const customerQuery = await manager.query(
+      `SELECT id, name, email, phone, assigned_to_id, created_at 
+       FROM customers 
+       WHERE id = $1 AND organization_id = $2 AND deleted_at IS NULL 
+       FOR UPDATE`,
+      [customerId, organizationId]
+    );
 
-  const user = await userRepo.findOne({
-    where: {
-      id: assignedToId,
-      organizationId,
-    },
+    if (customerQuery.length === 0) {
+      throw new Error('Customer not found');
+    }
+
+    const customer = customerQuery[0];
+
+    // Lock the user row to prevent concurrent over-assignment
+    const userQuery = await manager.query(
+      `SELECT id, name, email 
+       FROM users 
+       WHERE id = $1 AND organization_id = $2 
+       FOR UPDATE`,
+      [assignedToId, organizationId]
+    );
+
+    if (userQuery.length === 0) {
+      throw new Error('User not found');
+    }
+
+    // Count active customers for this user (excluding deleted ones)
+    const countQuery = await manager.query(
+      `SELECT COUNT(*) as count 
+       FROM customers 
+       WHERE assigned_to_id = $1 AND organization_id = $2 AND deleted_at IS NULL`,
+      [assignedToId, organizationId]
+    );
+
+    const currentActiveCount = parseInt(countQuery[0].count, 10);
+
+    // Business rule: Max 5 active customers per user
+    if (currentActiveCount >= 5) {
+      throw new Error(`User already has maximum active customers (${currentActiveCount}/5)`);
+    }
+
+    // Assign the customer
+    await manager.query(
+      `UPDATE customers 
+       SET assigned_to_id = $1 
+       WHERE id = $2 AND organization_id = $3`,
+      [assignedToId, customerId, organizationId]
+    );
+
+    // Return the updated customer with assigned user details
+    const updatedQuery = await manager.query(
+      `SELECT c.id, c.name, c.email, c.phone, c.assigned_to_id, c.created_at,
+              u.id as user_id, u.name as user_name, u.email as user_email
+       FROM customers c
+       LEFT JOIN users u ON c.assigned_to_id = u.id
+       WHERE c.id = $1`,
+      [customerId]
+    );
+
+    return updatedQuery[0];
   });
 
-  if (!customer || !user) {
-    return null;
-  }
+  if (!result) return null;
 
-  await customerRepo.update(
-    { id: customerId },
-    { assignedToId }
-  );
-
-  const result = await customerRepo
-    .createQueryBuilder('customer')
-    .leftJoinAndSelect('customer.assignedTo', 'assignedTo')
-    .where('customer.id = :id', { id: customerId })
-    .getOne();
-
-  return result ? mapCustomer(result) : null;
+  return {
+    id: result.id,
+    name: result.name,
+    email: result.email,
+    phone: result.phone,
+    organizationId: organizationId,
+    assignedToId: result.assigned_to_id,
+    assignedTo: result.user_name ? {
+      id: result.user_id,
+      name: result.user_name,
+      email: result.user_email
+    } : null,
+    createdAt: result.created_at,
+    updatedAt: result.created_at,
+  };
 }
 
 export async function restoreCustomerModel(

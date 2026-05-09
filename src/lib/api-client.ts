@@ -115,6 +115,10 @@ class ApiClient {
     return this.request<UserDTO>('/users', 'POST', data);
   }
 
+  async updateUser(id: string, data: Partial<CreateUserDTO>) {
+    return this.request<UserDTO>(`/users/${id}`, 'PUT', data);
+  }
+
   // Notes
   async addNote(customerId: string, data: CreateNoteDTO) {
     return this.request<NoteDTO>(`/customers/${customerId}/notes`, 'POST', data);

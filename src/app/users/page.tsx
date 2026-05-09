@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, type FormEvent, type SVGProps } from 'rea
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
 import { useAppAuth } from '@/hooks/useAppAuth';
+import { EditUserModal } from '@/components/modals/EditUserModal';
 import styles from './Users.module.css';
 
 interface UserListItem {
@@ -44,6 +45,15 @@ function ShieldIcon(props: IconProps) {
   );
 }
 
+function EditIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </svg>
+  );
+}
+
 export default function UsersPage() {
   const { session, organization } = useAppAuth();
   const [users, setUsers] = useState<UserListItem[]>([]);
@@ -53,6 +63,8 @@ export default function UsersPage() {
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'member' as 'member' | 'admin' });
+  const [editingUser, setEditingUser] = useState<UserListItem | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const isAdmin = session?.role === 'admin';
 
@@ -200,6 +212,7 @@ export default function UsersPage() {
                   <th>Role</th>
                   <th>Assigned</th>
                   <th>Created</th>
+                  {isAdmin && <th>Actions</th>}
                 </tr>
               </thead>
               <tbody>
@@ -219,6 +232,20 @@ export default function UsersPage() {
                     </td>
                     <td>{user.assignedCustomerCount}</td>
                     <td>{new Date(user.createdAt).toLocaleDateString()}</td>
+                    <td>
+                      {isAdmin && (
+                        <button
+                          onClick={() => {
+                            setEditingUser(user);
+                            setShowEditModal(true);
+                          }}
+                          className={styles.editButton}
+                          title="Edit user"
+                        >
+                          <EditIcon className={styles.editIcon} />
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -282,6 +309,23 @@ export default function UsersPage() {
           )}
         </aside>
       </section>
+
+      {showEditModal && editingUser && (
+        <EditUserModal
+          user={{
+            id: editingUser.id,
+            name: editingUser.name,
+            email: editingUser.email,
+            role: editingUser.role as 'admin' | 'member',
+          }}
+          isOpen={showEditModal}
+          onClose={() => {
+            setShowEditModal(false);
+            setEditingUser(null);
+          }}
+          onUpdate={() => loadUsers(search)}
+        />
+      )}
     </AppShell>
   );
 }

@@ -11,7 +11,14 @@ import {
 import { HttpError, parseJsonBody } from '@/server/middleware/http.middleware';
 
 export async function listCustomersController(request: NextRequest): Promise<NextResponse> {
-  const organizationId = request.headers.get('x-org-id');
+  let organizationId = request.headers.get('x-org-id');
+  
+  // Fallback for development - use first organization if no org-id provided
+  if (!organizationId && process.env.NODE_ENV === 'development') {
+    organizationId = '02c70e6b-ae37-472e-81b9-ea40577ed3f7';
+    console.warn('Using fallback organization ID for development');
+  }
+  
   if (!organizationId) {
     throw new HttpError('Organization ID is required', 400);
   }
@@ -27,8 +34,14 @@ export async function listCustomersController(request: NextRequest): Promise<Nex
 }
 
 export async function getCustomerController(request: NextRequest, { params }: { params: { customerId: string } }): Promise<NextResponse> {
-  const organizationId = request.headers.get('x-org-id');
+  let organizationId = request.headers.get('x-org-id');
   const customerId = params.customerId;
+
+  // Fallback for development - use first organization if no org-id provided
+  if (!organizationId && process.env.NODE_ENV === 'development') {
+    organizationId = '02c70e6b-ae37-472e-81b9-ea40577ed3f7';
+    console.warn('Using fallback organization ID for development');
+  }
 
   if (!organizationId) {
     throw new HttpError('Organization ID is required', 400);
@@ -48,7 +61,14 @@ export async function getCustomerController(request: NextRequest, { params }: { 
 }
 
 export async function createCustomerController(request: NextRequest): Promise<NextResponse> {
-  const organizationId = request.headers.get('x-org-id');
+  let organizationId = request.headers.get('x-org-id');
+  
+  // Fallback for development - use first organization if no org-id provided
+  if (!organizationId && process.env.NODE_ENV === 'development') {
+    organizationId = '02c70e6b-ae37-472e-81b9-ea40577ed3f7';
+    console.warn('Using fallback organization ID for development');
+  }
+  
   if (!organizationId) {
     throw new HttpError('Organization ID is required', 400);
   }
@@ -79,8 +99,14 @@ export async function createCustomerController(request: NextRequest): Promise<Ne
 }
 
 export async function updateCustomerController(request: NextRequest, { params }: { params: { customerId: string } }): Promise<NextResponse> {
-  const organizationId = request.headers.get('x-org-id');
+  let organizationId = request.headers.get('x-org-id');
   const customerId = params.customerId;
+
+  // Fallback for development - use first organization if no org-id provided
+  if (!organizationId && process.env.NODE_ENV === 'development') {
+    organizationId = '02c70e6b-ae37-472e-81b9-ea40577ed3f7';
+    console.warn('Using fallback organization ID for development');
+  }
 
   if (!organizationId) {
     throw new HttpError('Organization ID is required', 400);
@@ -112,8 +138,14 @@ export async function updateCustomerController(request: NextRequest, { params }:
 }
 
 export async function deleteCustomerController(request: NextRequest, { params }: { params: { customerId: string } }): Promise<NextResponse> {
-  const organizationId = request.headers.get('x-org-id');
+  let organizationId = request.headers.get('x-org-id');
   const customerId = params.customerId;
+
+  // Fallback for development - use first organization if no org-id provided
+  if (!organizationId && process.env.NODE_ENV === 'development') {
+    organizationId = '02c70e6b-ae37-472e-81b9-ea40577ed3f7';
+    console.warn('Using fallback organization ID for development');
+  }
 
   if (!organizationId) {
     throw new HttpError('Organization ID is required', 400);
@@ -133,8 +165,14 @@ export async function deleteCustomerController(request: NextRequest, { params }:
 }
 
 export async function assignCustomerController(request: NextRequest, { params }: { params: { customerId: string } }): Promise<NextResponse> {
-  const organizationId = request.headers.get('x-org-id');
+  let organizationId = request.headers.get('x-org-id');
   const customerId = params.customerId;
+
+  // Fallback for development - use first organization if no org-id provided
+  if (!organizationId && process.env.NODE_ENV === 'development') {
+    organizationId = '02c70e6b-ae37-472e-81b9-ea40577ed3f7';
+    console.warn('Using fallback organization ID for development');
+  }
 
   if (!organizationId) {
     throw new HttpError('Organization ID is required', 400);
@@ -156,18 +194,37 @@ export async function assignCustomerController(request: NextRequest, { params }:
     throw new HttpError('Assigned user ID is required', 400);
   }
 
-  const customer = await assignCustomerModel(customerId, organizationId, assignedToId);
+  try {
+    const customer = await assignCustomerModel(customerId, organizationId, assignedToId);
 
-  if (!customer) {
-    throw new HttpError('Customer or user not found', 404);
+    if (!customer) {
+      throw new HttpError('Customer or user not found', 404);
+    }
+
+    return NextResponse.json(customer, { status: 200 });
+  } catch (error: unknown) {
+    // Handle business rule violations
+    if (error instanceof Error) {
+      if (error.message.includes('maximum active customers')) {
+        throw new HttpError(error.message, 409); // Conflict
+      }
+      if (error.message.includes('Customer or user not found')) {
+        throw new HttpError(error.message, 404);
+      }
+    }
+    throw error;
   }
-
-  return NextResponse.json(customer, { status: 200 });
 }
 
 export async function restoreCustomerController(request: NextRequest, { params }: { params: { customerId: string } }): Promise<NextResponse> {
-  const organizationId = request.headers.get('x-org-id');
+  let organizationId = request.headers.get('x-org-id');
   const customerId = params.customerId;
+
+  // Fallback for development - use first organization if no org-id provided
+  if (!organizationId && process.env.NODE_ENV === 'development') {
+    organizationId = '02c70e6b-ae37-472e-81b9-ea40577ed3f7';
+    console.warn('Using fallback organization ID for development');
+  }
 
   if (!organizationId) {
     throw new HttpError('Organization ID is required', 400);

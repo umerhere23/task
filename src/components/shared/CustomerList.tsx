@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useApiClient, useApp } from '@/hooks/useAuth';
 import { LoadingSpinner, ErrorAlert, Pagination } from '@/components/ui/UI';
+import { EditCustomerModal } from '@/components/modals/EditCustomerModal';
 import styles from './CustomerList.module.css';
 
 interface Customer {
@@ -12,6 +13,7 @@ interface Customer {
   email: string;
   phone: string | null;
   assignedToName: string | null;
+  assignedToId: string | null;
   createdAt: string;
   deletedAt?: string | null;
 }
@@ -26,6 +28,8 @@ export function CustomerList() {
   const [pages, setPages] = useState(1);
   const [search, setSearch] = useState('');
   const [showDeleted, setShowDeleted] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const loadCustomers = async (pageNum: number = 1, searchTerm: string = '', includeDeleted: boolean = false) => {
@@ -98,6 +102,11 @@ export function CustomerList() {
     }
   };
 
+  const handleEdit = (customer: Customer) => {
+    setEditingCustomer(customer);
+    setShowEditModal(true);
+  };
+
   if (loading && customers.length === 0) {
     return <LoadingSpinner />;
   }
@@ -152,6 +161,7 @@ export function CustomerList() {
                   ) : (
                     <>
                       <Link href={`/customers/${customer.id}`} className={styles.actionLink}>View</Link>
+                      <button onClick={() => handleEdit(customer)} className={styles.actionButton}>Edit</button>
                       <button onClick={() => void handleDelete(customer.id)} className={styles.actionButton}>Delete</button>
                     </>
                   )}
@@ -175,6 +185,18 @@ export function CustomerList() {
           onPageChange={(newPage) => {
             void loadCustomers(newPage, search);
           }}
+        />
+      )}
+
+      {showEditModal && editingCustomer && (
+        <EditCustomerModal
+          customer={editingCustomer}
+          isOpen={showEditModal}
+          onClose={() => {
+            setShowEditModal(false);
+            setEditingCustomer(null);
+          }}
+          onUpdate={() => loadCustomers(page, search, showDeleted)}
         />
       )}
     </div>

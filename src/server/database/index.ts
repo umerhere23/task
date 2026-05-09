@@ -27,7 +27,22 @@ export async function ensureDatabaseInitialized(): Promise<DataSource> {
   }
 
   if (!initPromise) {
-    initPromise = AppDataSource.initialize();
+    initPromise = AppDataSource.initialize()
+      .then(() => {
+        console.log('Database connected successfully');
+        return AppDataSource;
+      })
+      .catch((error) => {
+        console.error('Database connection failed:', error);
+        console.error('Database config:', {
+          host: process.env.DB_HOST,
+          port: process.env.DB_PORT,
+          username: process.env.DB_USER,
+          database: process.env.DB_NAME,
+        });
+        initPromise = null; // Reset promise to allow retry
+        throw error;
+      });
   }
 
   return initPromise;
