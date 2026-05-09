@@ -1,4 +1,5 @@
 import { ensureDatabaseInitialized } from '@/server/database';
+import crypto from 'crypto';
 import { OrganizationEntity } from '@/server/entities/Organization';
 import { UserEntity } from '@/server/entities/User';
 import { OrganizationDTO, UserDTO } from '@/types';

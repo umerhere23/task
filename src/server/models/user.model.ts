@@ -1,4 +1,5 @@
 import { ensureDatabaseInitialized } from '@/server/database';
+import crypto from 'crypto';
 import { UserEntity } from '@/server/entities/User';
 import { CreateUserDTO, UserDTO, UserListDTO } from '@/types';
 import { encodePassword } from '@/lib/password';

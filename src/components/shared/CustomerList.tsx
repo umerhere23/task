@@ -13,6 +13,7 @@ interface Customer {
   phone: string | null;
   assignedToName: string | null;
   createdAt: string;
+  deletedAt?: string | null;
 }
 
 export function CustomerList() {
@@ -24,13 +25,14 @@ export function CustomerList() {
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
   const [search, setSearch] = useState('');
+  const [showDeleted, setShowDeleted] = useState(false);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const loadCustomers = async (pageNum: number = 1, searchTerm: string = '') => {
+  const loadCustomers = async (pageNum: number = 1, searchTerm: string = '', includeDeleted: boolean = false) => {
     try {
       setLoading(true);
       setError(null);
-      const result = await api.listCustomers(pageNum, 20, searchTerm);
+      const result = await api.listCustomers(pageNum, 20, searchTerm, includeDeleted);
       setCustomers(result.data);
       setPages(result.pages);
       setPage(pageNum);
@@ -46,7 +48,7 @@ export function CustomerList() {
   };
 
   useEffect(() => {
-    void loadCustomers();
+    void loadCustomers(1, '', showDeleted);
   }, [organizationId]);
 
   useEffect(() => {
@@ -64,8 +66,36 @@ export function CustomerList() {
     }
 
     searchTimeoutRef.current = setTimeout(() => {
-      void loadCustomers(1, value);
+      void loadCustomers(1, value, showDeleted);
     }, 300);
+  };
+
+  const handleToggleDeleted = () => {
+    setShowDeleted((v) => {
+      const next = !v;
+      void loadCustomers(1, search, next);
+      return next;
+    });
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await api.deleteCustomer(id);
+      void loadCustomers(page, search, showDeleted);
+    } catch (err: unknown) {
+      if (err instanceof Error) setError(err.message);
+      else setError('Failed to delete customer');
+    }
+  };
+
+  const handleRestore = async (id: string) => {
+    try {
+      await api.restoreCustomer(id);
+      void loadCustomers(page, search, showDeleted);
+    } catch (err: unknown) {
+      if (err instanceof Error) setError(err.message);
+      else setError('Failed to restore customer');
+    }
   };
 
   if (loading && customers.length === 0) {
@@ -88,6 +118,9 @@ export function CustomerList() {
         >
           New Customer
         </Link>
+        <label className={styles.showDeletedToggle}>
+          <input type="checkbox" checked={showDeleted} onChange={handleToggleDeleted} /> Show deleted
+        </label>
       </div>
 
       {error && <ErrorAlert message={error} />}
@@ -111,12 +144,17 @@ export function CustomerList() {
                 <td className={styles.tableCell}>{customer.phone || '—'}</td>
                 <td className={styles.tableCell}>{customer.assignedToName || '—'}</td>
                 <td className={styles.tableCell}>
-                  <Link
-                    href={`/customers/${customer.id}`}
-                    className={styles.actionLink}
-                  >
-                    View
-                  </Link>
+                  {customer.deletedAt ? (
+                    <>
+                      <button onClick={() => void handleRestore(customer.id)} className={styles.actionButton}>Restore</button>
+                      <span className={styles.deletedLabel}>Deleted</span>
+                    </>
+                  ) : (
+                    <>
+                      <Link href={`/customers/${customer.id}`} className={styles.actionLink}>View</Link>
+                      <button onClick={() => void handleDelete(customer.id)} className={styles.actionButton}>Delete</button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}

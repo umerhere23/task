@@ -19,8 +19,9 @@ export async function listCustomersController(request: NextRequest): Promise<Nex
   const page = parseInt(request.nextUrl.searchParams.get('page') || '1', 10);
   const limit = parseInt(request.nextUrl.searchParams.get('limit') || '20', 10);
   const search = request.nextUrl.searchParams.get('search') || undefined;
+  const includeDeleted = request.nextUrl.searchParams.get('includeDeleted') === 'true';
 
-  const result = await listCustomersModel(organizationId, page, limit, search);
+  const result = await listCustomersModel(organizationId, page, limit, search, includeDeleted);
 
   return NextResponse.json(result, { status: 200 });
 }

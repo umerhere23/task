@@ -37,6 +37,7 @@ export interface CustomerListDTO {
   phone: string | null;
   assignedToId: string | null;
   assignedToName: string | null;
+  deletedAt?: string | null;
   createdAt: string;
 }
 

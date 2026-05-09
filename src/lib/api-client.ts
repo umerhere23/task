@@ -72,11 +72,12 @@ class ApiClient {
   }
 
   // Customers
-  async listCustomers(page: number = 1, limit: number = 20, search?: string) {
+  async listCustomers(page: number = 1, limit: number = 20, search?: string, includeDeleted: boolean = false) {
     const params = new URLSearchParams({
       page: page.toString(),
       limit: limit.toString(),
       ...(search && { search }),
+      ...(includeDeleted ? { includeDeleted: 'true' } : {}),
     });
     return this.request<PaginatedResponse<CustomerListDTO>>(`/customers?${params}`, 'GET');
   }

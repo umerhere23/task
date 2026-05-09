@@ -1,4 +1,5 @@
 import { QueryFailedError } from 'typeorm';
+import crypto from 'crypto';
 import { ensureDatabaseInitialized } from '@/server/database';
 import { OrganizationEntity } from '@/server/entities/Organization';
 import { UserEntity } from '@/server/entities/User';

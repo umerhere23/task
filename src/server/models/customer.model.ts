@@ -1,4 +1,5 @@
 import { ensureDatabaseInitialized } from '@/server/database';
+import crypto from 'crypto';
 import { CustomerEntity } from '@/server/entities/Customer';
 import { UserEntity } from '@/server/entities/User';
 import { CustomerDTO, CustomerListDTO } from '@/types';
@@ -40,6 +41,7 @@ function mapCustomerList(row: CustomerEntity): CustomerListDTO {
     assignedToId: row.assignedToId,
     assignedToName: row.assignedTo?.name || null,
     createdAt: row.createdAt.toISOString(),
+    deletedAt: row.deletedAt ? row.deletedAt.toISOString() : null,
   };
 }
 
@@ -47,7 +49,8 @@ export async function listCustomersModel(
   organizationId: string,
   page: number = 1,
   limit: number = 20,
-  search?: string
+  search?: string,
+  includeDeleted: boolean = false
 ): Promise<{ data: CustomerListDTO[]; total: number; pages: number }> {
   const dataSource = await ensureDatabaseInitialized();
   const repo = dataSource.getRepository<CustomerEntity>('Customer');
@@ -55,8 +58,11 @@ export async function listCustomersModel(
   const query = repo
     .createQueryBuilder('customer')
     .leftJoinAndSelect('customer.assignedTo', 'assignedTo')
-    .where('customer.organization_id = :organizationId', { organizationId })
-    .andWhere('customer.deleted_at IS NULL');
+    .where('customer.organization_id = :organizationId', { organizationId });
+
+  if (!includeDeleted) {
+    query.andWhere('customer.deleted_at IS NULL');
+  }
 
   if (search) {
     query.andWhere(
